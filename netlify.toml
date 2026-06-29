@@ -1,0 +1,17 @@
+# Netlify deploy config for the FORGE frontend (static React/Vite app).
+# The FastAPI backend is hosted separately (see DEPLOYMENT.md); point the
+# frontend at it by setting VITE_API_URL in Netlify > Site settings > Environment.
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA fallback so client-side routes (e.g. /experiments/:id) resolve to index.html.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

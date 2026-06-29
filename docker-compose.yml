@@ -1,0 +1,27 @@
+services:
+  forge-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./experiments:/app/experiments
+      - ./deployments:/app/deployments
+      - ./outputs:/app/outputs
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+
+  forge-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - forge-api
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"

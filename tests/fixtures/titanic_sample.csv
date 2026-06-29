@@ -1,0 +1,31 @@
+PassengerId,Survived,Pclass,Name,Sex,Age,SibSp,Parch,Fare,Embarked
+1,0,3,"Braund, Mr. Owen Harris",male,22,1,0,7.25,S
+2,1,1,"Cumings, Mrs. John Bradley",female,38,1,0,71.2833,C
+3,1,3,"Heikkinen, Miss. Laina",female,26,0,0,7.925,S
+4,1,1,"Futrelle, Mrs. Jacques Heath",female,35,1,0,53.1,S
+5,0,3,"Allen, Mr. William Henry",male,35,0,0,8.05,S
+6,0,3,"Moran, Mr. James",male,,0,0,8.4583,Q
+7,0,1,"McCarthy, Mr. Timothy J",male,54,0,0,51.8625,S
+8,0,3,"Palsson, Master. Gosta Leonard",male,2,3,1,21.075,S
+9,1,3,"Johnson, Mrs. Oscar W",female,27,0,2,11.1333,S
+10,1,2,"Nasser, Mrs. Nicholas",female,14,1,0,30.0708,C
+11,1,3,"Sandstrom, Miss. Marguerite Rut",female,4,1,1,16.7,S
+12,1,1,"Bonnell, Miss. Elizabeth",female,58,0,0,26.55,S
+13,0,3,"Saundercock, Mr. William Henry",male,20,0,0,8.05,S
+14,0,3,"Andersson, Mr. Anders Johan",male,39,1,5,31.275,S
+15,0,3,"Vestrom, Miss. Hulda Amanda Adolfina",female,14,0,0,7.8542,S
+16,1,1,"Hewlett, Mrs. (Mary D Kingcome)",female,55,0,0,51,S
+17,0,3,"Rice, Master. Eugene",male,2,4,1,29.125,Q
+18,1,2,"Williams, Mr. Charles Eugene",male,,0,0,13,S
+19,0,3,"Vander Planke, Mrs. Julius",female,31,1,0,18,S
+20,0,3,"Masselmani, Mrs. Fatima",female,,0,0,7.225,S
+21,0,2,"Fynney, Mr. Joseph J",male,35,0,0,26,S
+22,1,2,"Beesley, Mr. Lawrence",male,34,0,0,13,S
+23,1,3,"McGovern, Miss. Mary",female,,0,0,7.8792,Q
+24,1,1,"Wallace, Mrs. (Martha Hacker)",female,28,1,0,146.5208,S
+25,0,3,"Devaney, Miss. Margaret Delia",female,19,0,0,7.8792,Q
+26,1,3,"Caldwell, Mr. Albert Charles",male,26,1,1,29,S
+27,0,3,"Leonard, Mr. Lionel",male,21,0,0,12.475,S
+28,0,1,"Fortune, Mr. Charles Alexander",male,19,3,2,263,C
+29,1,3,"O'Dwyer, Miss. Ellen",female,,0,0,7.8792,Q
+30,0,3,"Todoroff, Mr. Lalio",male,,0,0,7.8958,S
