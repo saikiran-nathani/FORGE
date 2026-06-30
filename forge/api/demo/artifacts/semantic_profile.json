@@ -1,0 +1,97 @@
+{
+  "columns": {
+    "tenure_months": {
+      "meaning": "Column representing tenure months",
+      "importance": "HIGH",
+      "sensitive": false,
+      "suggested_transforms": [
+        "Log transform tenure_months if skewed",
+        "Z-score normalize tenure_months",
+        "Percentile rank for tenure_months"
+      ],
+      "quality_issues": "None detected"
+    },
+    "monthly_charges": {
+      "meaning": "Column representing monthly charges",
+      "importance": "HIGH",
+      "sensitive": false,
+      "suggested_transforms": [
+        "Log transform monthly_charges if skewed",
+        "Z-score normalize monthly_charges",
+        "Percentile rank for monthly_charges"
+      ],
+      "quality_issues": "None detected"
+    },
+    "total_charges": {
+      "meaning": "Column representing total charges",
+      "importance": "HIGH",
+      "sensitive": false,
+      "suggested_transforms": [
+        "Log transform total_charges if skewed",
+        "Z-score normalize total_charges",
+        "Percentile rank for total_charges"
+      ],
+      "quality_issues": "None detected"
+    },
+    "num_support_tickets": {
+      "meaning": "Column representing num support tickets",
+      "importance": "MEDIUM",
+      "sensitive": false,
+      "suggested_transforms": [
+        "Frequency encode num_support_tickets",
+        "One-hot encode num_support_tickets"
+      ],
+      "quality_issues": "None detected"
+    },
+    "avg_session_minutes": {
+      "meaning": "Column representing avg session minutes",
+      "importance": "MEDIUM",
+      "sensitive": false,
+      "suggested_transforms": [
+        "Log transform avg_session_minutes if skewed",
+        "Z-score normalize avg_session_minutes",
+        "Percentile rank for avg_session_minutes"
+      ],
+      "quality_issues": "None detected"
+    },
+    "logins_last_30d": {
+      "meaning": "Column representing logins last 30d",
+      "importance": "MEDIUM",
+      "sensitive": false,
+      "suggested_transforms": [
+        "Log transform logins_last_30d if skewed",
+        "Z-score normalize logins_last_30d",
+        "Percentile rank for logins_last_30d"
+      ],
+      "quality_issues": "None detected"
+    },
+    "discount_pct": {
+      "meaning": "Column representing discount pct",
+      "importance": "MEDIUM",
+      "sensitive": false,
+      "suggested_transforms": [
+        "Log transform discount_pct if skewed",
+        "Z-score normalize discount_pct",
+        "Percentile rank for discount_pct"
+      ],
+      "quality_issues": "None detected"
+    },
+    "account_age_days": {
+      "meaning": "Column representing account age days",
+      "importance": "MEDIUM",
+      "sensitive": true,
+      "suggested_transforms": [
+        "Log transform account_age_days if skewed",
+        "Z-score normalize account_age_days",
+        "Percentile rank for account_age_days"
+      ],
+      "quality_issues": "None detected"
+    }
+  },
+  "data_quality_summary": "Dataset quality score 93.5/100. Average missing rate 0.0%. Task: Predict which customers will churn.",
+  "key_interactions": [
+    "tenure_months \u00d7 monthly_charges"
+  ],
+  "leakage_risks": [],
+  "source": "heuristic"
+}

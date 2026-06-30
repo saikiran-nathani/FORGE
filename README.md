@@ -1,33 +1,43 @@
 # FORGE
 
+<!-- Replace OWNER/REPO with your GitHub path once pushed, e.g. saikiran/FORGE -->
+[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.11+-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 LLM-powered automated ML platform. Upload a dataset, describe your prediction goal, and FORGE automatically profiles data, engineers features, trains 14+ model architectures with Bayesian HPO, generates evaluation reports with explainability, and deploys the best model as a production API.
 
 ## Architecture
 
+```mermaid
+flowchart TD
+    A[Upload CSV + Task Description] --> B[Data Profiling<br/>statistical + LLM semantic analysis]
+    B --> C[Feature Engineering<br/>LLM-generated features + selection]
+    C --> D[Model Training<br/>14 classical + 2 DL + ensembles + Optuna HPO]
+    D --> E[Evaluation<br/>SHAP · LIME · PDP · error analysis · fairness]
+    E --> F[Deployment<br/>FastAPI + Docker + drift monitoring]
+    F --> G[Prediction API + live Playground]
 ```
-Upload CSV + Task Description
-         │
-         ▼
-┌─────────────────────┐
-│  Data Profiling     │  Statistical + LLM semantic analysis
-└─────────┬───────────┘
-          ▼
-┌─────────────────────┐
-│  Feature Engineering│  LLM-generated features + selection
-└─────────┬───────────┘
-          ▼
-┌─────────────────────┐
-│  Model Training     │  14 classical + 2 DL + ensembles + Optuna HPO
-└─────────┬───────────┘
-          ▼
-┌─────────────────────┐
-│  Evaluation         │  SHAP, LIME, PDP, error analysis, fairness
-└─────────┬───────────┘
-          ▼
-┌─────────────────────┐
-│  Deployment         │  FastAPI + Docker + drift monitoring
-└─────────────────────┘
+
+## Live Demo
+
+<!-- Add your deployed URL once live -->
+**Demo:** _add your Netlify URL_  ·  **Backend:** _add your API URL_
+
+The app ships with a **pre-trained demo experiment** (`forge/api/demo/`) that the
+API loads on startup, so the dashboard opens instantly with a real model
+leaderboard, SHAP explanations, and reports — and the Playground makes live
+predictions with **zero training required**. See [DEPLOYMENT.md](DEPLOYMENT.md).
+
+To reseed the demo with your own dataset:
+
+```bash
+python scripts/build_demo_seed.py your_data.csv --target your_col --task "Predict ..."
+# then commit the regenerated forge/api/demo/ directory
 ```
+
+> The bundled seed uses an illustrative synthetic dataset (`forge/api/demo/demo_dataset.csv`).
+> Swap in a real dataset (e.g. Titanic, Telco churn) before sharing the demo.
 
 ## Quick Start
 

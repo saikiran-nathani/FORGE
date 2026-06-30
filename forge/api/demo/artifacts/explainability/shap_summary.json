@@ -1,0 +1,14 @@
+{
+  "model_name": "voting_ensemble",
+  "top_features": [
+    {
+      "feature": "tenure_months",
+      "mean_abs_shap": 0.12941863703915793
+    },
+    {
+      "feature": "monthly_charges",
+      "mean_abs_shap": 0.12941863703915793
+    }
+  ],
+  "n_samples_explained": 200
+}

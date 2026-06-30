@@ -1,0 +1,9 @@
+{
+  "sensitive_columns": [
+    "account_age_days"
+  ],
+  "metrics": {
+    "account_age_days": {}
+  },
+  "flags": []
+}

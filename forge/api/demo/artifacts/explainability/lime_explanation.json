@@ -1,0 +1,17 @@
+{
+  "instance_index": 0,
+  "explanations": [
+    {
+      "feature": "logins_last_30d > 0.70",
+      "weight": 0.4648379318611642
+    },
+    {
+      "feature": "tenure_months > 0.38",
+      "weight": 0.24406536180686186
+    },
+    {
+      "feature": "0.23 < monthly_charges <= 0.78",
+      "weight": -0.02360592075787449
+    }
+  ]
+}

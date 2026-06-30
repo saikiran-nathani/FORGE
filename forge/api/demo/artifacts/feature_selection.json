@@ -1,0 +1,92 @@
+{
+  "selected": [
+    "tenure_months",
+    "monthly_charges",
+    "logins_last_30d"
+  ],
+  "removed": [
+    {
+      "feature": "total_charges",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "avg_session_minutes",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "discount_pct",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "account_age_days",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_0",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_10",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_11",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_14",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_15",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_2",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_3",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_4",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_5",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_6",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_7",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_8",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_9",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "num_support_tickets_12",
+      "reason": "low_shap_importance"
+    },
+    {
+      "feature": "num_support_tickets_13",
+      "reason": "low_shap_importance"
+    }
+  ],
+  "importance": {
+    "tenure_months": 0.9892605609372411,
+    "monthly_charges": 0.7420569092347579,
+    "logins_last_30d": 2.4060840556615846,
+    "num_support_tickets_12": 0.006042559984895267,
+    "num_support_tickets_13": 0.0
+  }
+}

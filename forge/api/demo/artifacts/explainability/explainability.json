@@ -1,0 +1,44 @@
+{
+  "model_name": "voting_ensemble",
+  "top_features": [
+    {
+      "feature": "tenure_months",
+      "mean_abs_shap": 0.12941863703915793
+    },
+    {
+      "feature": "monthly_charges",
+      "mean_abs_shap": 0.12941863703915793
+    }
+  ],
+  "n_samples_explained": 200,
+  "lime": {
+    "instance_index": 0,
+    "explanations": [
+      {
+        "feature": "logins_last_30d > 0.70",
+        "weight": 0.4648379318611642
+      },
+      {
+        "feature": "tenure_months > 0.38",
+        "weight": 0.24406536180686186
+      },
+      {
+        "feature": "0.23 < monthly_charges <= 0.78",
+        "weight": -0.02360592075787449
+      }
+    ]
+  },
+  "pdp": {
+    "features": [
+      "tenure_months",
+      "monthly_charges",
+      "logins_last_30d"
+    ],
+    "plot": "pdp_plots.png"
+  },
+  "permutation_importance": {
+    "tenure_months": 0.19710503838491164,
+    "monthly_charges": 0.13121289503624134,
+    "logins_last_30d": 0.23785411894934408
+  }
+}

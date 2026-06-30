@@ -1,0 +1,35 @@
+{
+  "n_rows": 1600,
+  "n_cols": 9,
+  "quality_score": 93.5,
+  "recommended_metric": "f1",
+  "memory_usage_mb": 0.11,
+  "column_types": {
+    "tenure_months": "numerical",
+    "monthly_charges": "numerical",
+    "total_charges": "numerical",
+    "num_support_tickets": "categorical",
+    "avg_session_minutes": "numerical",
+    "logins_last_30d": "numerical",
+    "discount_pct": "numerical",
+    "account_age_days": "numerical",
+    "churned": "binary"
+  },
+  "target_analysis": {
+    "task_type": "classification",
+    "n_unique": 2,
+    "missing_pct": 0.0,
+    "class_distribution": {
+      "0": 1182,
+      "1": 418
+    },
+    "class_imbalance_ratio": 0.3536379018612521,
+    "is_binary": true
+  },
+  "missing_analysis": {
+    "missing_pct_by_column": {},
+    "avg_missing_rate": 0.0,
+    "high_co_missing_pairs": [],
+    "imputation_recommendations": {}
+  }
+}

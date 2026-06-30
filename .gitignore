@@ -35,3 +35,7 @@ frontend/.env.local
 # Secrets
 .env
 .env.local
+
+# Keep the committed demo seed (the live portfolio demo loads it at startup)
+!forge/api/demo/
+!forge/api/demo/**

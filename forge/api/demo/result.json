@@ -1,0 +1,670 @@
+{
+  "best_model_name": "voting_ensemble",
+  "best_metrics": {
+    "accuracy": 0.9375,
+    "f1_macro": 0.9192897497982244,
+    "f1_weighted": 0.9375,
+    "precision_macro": 0.9192897497982244,
+    "recall_macro": 0.9192897497982244,
+    "mcc": 0.8385794995964487,
+    "cohen_kappa": 0.8385794995964487,
+    "confusion_matrix": [
+      [
+        226,
+        10
+      ],
+      [
+        10,
+        74
+      ]
+    ],
+    "roc_auc": 0.976644471347861,
+    "pr_auc": 0.9579449132910137,
+    "brier_score": 0.043029171376171634,
+    "log_loss": 0.15679120634083063,
+    "ece": 0.03651636693481296,
+    "f1": 0.8809523809523809
+  },
+  "task_type": "binary_classification",
+  "model_results": [
+    {
+      "model_name": "logistic_regression",
+      "cv_score": 0.7916871321274448,
+      "cv_score_std": 0.02807989473758863,
+      "training_time": 0.000829333090223372,
+      "inference_latency_ms": 0.1360250054858625,
+      "best_params": {
+        "penalty": "l2",
+        "C": 0.1319496149042567,
+        "class_weight": null
+      }
+    },
+    {
+      "model_name": "random_forest",
+      "cv_score": 0.8536720245652217,
+      "cv_score_std": 0.02110600463303919,
+      "training_time": 0.18197716702707112,
+      "inference_latency_ms": 27.255379094276577,
+      "best_params": {
+        "n_estimators": 339,
+        "max_depth": 19,
+        "min_samples_split": 4,
+        "min_samples_leaf": 3,
+        "max_features": 0.5,
+        "class_weight": "balanced"
+      }
+    },
+    {
+      "model_name": "xgboost",
+      "cv_score": 0.8528647363306028,
+      "cv_score_std": 0.021690703467599236,
+      "training_time": 0.7241317080333829,
+      "inference_latency_ms": 0.4938707919791341,
+      "best_params": {
+        "n_estimators": 592,
+        "max_depth": 4,
+        "learning_rate": 0.26487326352428686,
+        "min_child_weight": 16,
+        "subsample": 0.9757995766256756,
+        "colsample_bytree": 0.9579309401710595,
+        "reg_alpha": 0.002404915432737351,
+        "reg_lambda": 1.9809253750493887
+      }
+    },
+    {
+      "model_name": "lightgbm",
+      "cv_score": 0.8898863087108042,
+      "cv_score_std": 0.014112173396985703,
+      "training_time": 0.7775147500215098,
+      "inference_latency_ms": 0.5221875035203993,
+      "best_params": {
+        "n_estimators": 421,
+        "max_depth": 5,
+        "learning_rate": 0.04612811663739071,
+        "num_leaves": 30,
+        "min_child_samples": 82,
+        "subsample": 0.5372753218398854,
+        "colsample_bytree": 0.9934434683002586,
+        "reg_alpha": 0.08916674715636552,
+        "reg_lambda": 6.143857495033091e-07
+      }
+    },
+    {
+      "model_name": "catboost",
+      "cv_score": 0.8814549437221169,
+      "cv_score_std": 0.021411397432111845,
+      "training_time": 0.3885169170098379,
+      "inference_latency_ms": 0.11541660642251372,
+      "best_params": {
+        "iterations": 227,
+        "depth": 10,
+        "learning_rate": 0.024112898115291975,
+        "l2_leaf_reg": 0.44677528179739073,
+        "auto_class_weights": "Balanced"
+      }
+    },
+    {
+      "model_name": "voting_ensemble",
+      "cv_score": 0.9254327533239467,
+      "cv_score_std": 0.0,
+      "training_time": 0.0,
+      "inference_latency_ms": 0.0,
+      "best_params": {}
+    },
+    {
+      "model_name": "stacking_ensemble",
+      "cv_score": 0.9204342410434977,
+      "cv_score_std": 0.0,
+      "training_time": 0.0,
+      "inference_latency_ms": 0.0,
+      "best_params": {}
+    }
+  ],
+  "quality_score": 93.5,
+  "generated_features": [],
+  "semantic_profile": {
+    "columns": {
+      "tenure_months": {
+        "meaning": "Column representing tenure months",
+        "importance": "HIGH",
+        "sensitive": false,
+        "suggested_transforms": [
+          "Log transform tenure_months if skewed",
+          "Z-score normalize tenure_months",
+          "Percentile rank for tenure_months"
+        ],
+        "quality_issues": "None detected"
+      },
+      "monthly_charges": {
+        "meaning": "Column representing monthly charges",
+        "importance": "HIGH",
+        "sensitive": false,
+        "suggested_transforms": [
+          "Log transform monthly_charges if skewed",
+          "Z-score normalize monthly_charges",
+          "Percentile rank for monthly_charges"
+        ],
+        "quality_issues": "None detected"
+      },
+      "total_charges": {
+        "meaning": "Column representing total charges",
+        "importance": "HIGH",
+        "sensitive": false,
+        "suggested_transforms": [
+          "Log transform total_charges if skewed",
+          "Z-score normalize total_charges",
+          "Percentile rank for total_charges"
+        ],
+        "quality_issues": "None detected"
+      },
+      "num_support_tickets": {
+        "meaning": "Column representing num support tickets",
+        "importance": "MEDIUM",
+        "sensitive": false,
+        "suggested_transforms": [
+          "Frequency encode num_support_tickets",
+          "One-hot encode num_support_tickets"
+        ],
+        "quality_issues": "None detected"
+      },
+      "avg_session_minutes": {
+        "meaning": "Column representing avg session minutes",
+        "importance": "MEDIUM",
+        "sensitive": false,
+        "suggested_transforms": [
+          "Log transform avg_session_minutes if skewed",
+          "Z-score normalize avg_session_minutes",
+          "Percentile rank for avg_session_minutes"
+        ],
+        "quality_issues": "None detected"
+      },
+      "logins_last_30d": {
+        "meaning": "Column representing logins last 30d",
+        "importance": "MEDIUM",
+        "sensitive": false,
+        "suggested_transforms": [
+          "Log transform logins_last_30d if skewed",
+          "Z-score normalize logins_last_30d",
+          "Percentile rank for logins_last_30d"
+        ],
+        "quality_issues": "None detected"
+      },
+      "discount_pct": {
+        "meaning": "Column representing discount pct",
+        "importance": "MEDIUM",
+        "sensitive": false,
+        "suggested_transforms": [
+          "Log transform discount_pct if skewed",
+          "Z-score normalize discount_pct",
+          "Percentile rank for discount_pct"
+        ],
+        "quality_issues": "None detected"
+      },
+      "account_age_days": {
+        "meaning": "Column representing account age days",
+        "importance": "MEDIUM",
+        "sensitive": true,
+        "suggested_transforms": [
+          "Log transform account_age_days if skewed",
+          "Z-score normalize account_age_days",
+          "Percentile rank for account_age_days"
+        ],
+        "quality_issues": "None detected"
+      }
+    },
+    "data_quality_summary": "Dataset quality score 93.5/100. Average missing rate 0.0%. Task: Predict which customers will churn.",
+    "key_interactions": [
+      "tenure_months \u00d7 monthly_charges"
+    ],
+    "leakage_risks": [],
+    "source": "heuristic"
+  },
+  "shap_summary": {
+    "model_name": "voting_ensemble",
+    "top_features": [
+      {
+        "feature": "tenure_months",
+        "mean_abs_shap": 0.12941863703915793
+      },
+      {
+        "feature": "monthly_charges",
+        "mean_abs_shap": 0.12941863703915793
+      }
+    ],
+    "n_samples_explained": 200,
+    "lime": {
+      "instance_index": 0,
+      "explanations": [
+        {
+          "feature": "logins_last_30d > 0.70",
+          "weight": 0.4648379318611642
+        },
+        {
+          "feature": "tenure_months > 0.38",
+          "weight": 0.24406536180686186
+        },
+        {
+          "feature": "0.23 < monthly_charges <= 0.78",
+          "weight": -0.02360592075787449
+        }
+      ]
+    },
+    "pdp": {
+      "features": [
+        "tenure_months",
+        "monthly_charges",
+        "logins_last_30d"
+      ],
+      "plot": "pdp_plots.png"
+    },
+    "permutation_importance": {
+      "tenure_months": 0.19710503838491164,
+      "monthly_charges": 0.13121289503624134,
+      "logins_last_30d": 0.23785411894934408
+    }
+  },
+  "error_analysis": {
+    "worst_predictions": [
+      {
+        "index": 54,
+        "true_label": 1,
+        "predicted_label": 0,
+        "loss": 4.76965262502576,
+        "top_features": {
+          "tenure_months": -0.4496083408359722,
+          "monthly_charges": 0.8826893315646231,
+          "logins_last_30d": -1.5111131635195214
+        },
+        "probability": 0.008483326543513204
+      },
+      {
+        "index": 110,
+        "true_label": 1,
+        "predicted_label": 0,
+        "loss": 3.0841235033123406,
+        "top_features": {
+          "tenure_months": 0.7190623669803238,
+          "monthly_charges": -0.648576064075525,
+          "logins_last_30d": -0.8074662481710694
+        },
+        "probability": 0.045770133694559595
+      },
+      {
+        "index": 307,
+        "true_label": 0,
+        "predicted_label": 1,
+        "loss": 2.8541219734393493,
+        "top_features": {
+          "tenure_months": 0.386696370137872,
+          "monthly_charges": 0.8496153916057421,
+          "logins_last_30d": 1.5045164736881298
+        },
+        "probability": 0.9423936211471781
+      },
+      {
+        "index": 59,
+        "true_label": 0,
+        "predicted_label": 1,
+        "loss": 2.079772680476997,
+        "top_features": {
+          "tenure_months": -1.267947322250765,
+          "monthly_charges": 0.9395532985114724,
+          "logins_last_30d": 0.7003485704327562
+        },
+        "probability": 0.8750413854970951
+      },
+      {
+        "index": 60,
+        "true_label": 1,
+        "predicted_label": 0,
+        "loss": 2.0440408358268956,
+        "top_features": {
+          "tenure_months": -0.4487100543580195,
+          "monthly_charges": 0.5531104210971715,
+          "logins_last_30d": 0.09722264299122599
+        },
+        "probability": 0.12950434635396235
+      },
+      {
+        "index": 86,
+        "true_label": 1,
+        "predicted_label": 0,
+        "loss": 1.6939482104737842,
+        "top_features": {
+          "tenure_months": -0.915819022893357,
+          "monthly_charges": 0.6279619694251669,
+          "logins_last_30d": 0.09722264299122599
+        },
+        "probability": 0.1837924383637969
+      },
+      {
+        "index": 145,
+        "true_label": 1,
+        "predicted_label": 0,
+        "loss": 1.641773977626421,
+        "top_features": {
+          "tenure_months": -0.22683329430373436,
+          "monthly_charges": 0.5658758014321791,
+          "logins_last_30d": 0.2982646188050694
+        },
+        "probability": 0.19363623108275552
+      },
+      {
+        "index": 89,
+        "true_label": 0,
+        "predicted_label": 1,
+        "loss": 1.3895427507974187,
+        "top_features": {
+          "tenure_months": -0.8197023697524318,
+          "monthly_charges": 1.0202072924462888,
+          "logins_last_30d": 0.7003485704327562
+        },
+        "probability": 0.7508107798419993
+      },
+      {
+        "index": 147,
+        "true_label": 0,
+        "predicted_label": 1,
+        "loss": 1.3581786594582252,
+        "top_features": {
+          "tenure_months": -0.2825270559367939,
+          "monthly_charges": 1.0950588407742836,
+          "logins_last_30d": 1.0019115341535214
+        },
+        "probability": 0.7428713304013176
+      },
+      {
+        "index": 36,
+        "true_label": 0,
+        "predicted_label": 1,
+        "loss": 1.2696556214818842,
+        "top_features": {
+          "tenure_months": -0.09837832795651662,
+          "monthly_charges": -1.073315082494846,
+          "logins_last_30d": 1.4039954857812083
+        },
+        "probability": 0.7190716491891277
+      },
+      {
+        "index": 133,
+        "true_label": 0,
+        "predicted_label": 1,
+        "loss": 1.1905122336361427,
+        "top_features": {
+          "tenure_months": 0.6471994487441177,
+          "monthly_charges": -0.920130518474763,
+          "logins_last_30d": 0.3987856067119911
+        },
+        "probability": 0.6959345283931052
+      },
+      {
+        "index": 200,
+        "true_label": 0,
+        "predicted_label": 1,
+        "loss": 1.0528867997323945,
+        "top_features": {
+          "tenure_months": -0.0453794257573149,
+          "monthly_charges": -1.554337823300334,
+          "logins_last_30d": 1.5045164736881298
+        },
+        "probability": 0.6510709943685901
+      },
+      {
+        "index": 222,
+        "true_label": 0,
+        "predicted_label": 1,
+        "loss": 0.9369087264449489,
+        "top_features": {
+          "tenure_months": 0.3714255000126781,
+          "monthly_charges": 1.131034003536576,
+          "logins_last_30d": 1.1024325220604432
+        },
+        "probability": 0.6081627588051158
+      },
+      {
+        "index": 166,
+        "true_label": 0,
+        "predicted_label": 1,
+        "loss": 0.8929837285559374,
+        "top_features": {
+          "tenure_months": -0.3642711254304779,
+          "monthly_charges": -1.601917877276269,
+          "logins_last_30d": 0.7003485704327562
+        },
+        "probability": 0.5905677064011275
+      },
+      {
+        "index": 263,
+        "true_label": 1,
+        "predicted_label": 0,
+        "loss": 0.860872797592388,
+        "top_features": {
+          "tenure_months": 3.0052014533696183,
+          "monthly_charges": 1.2372187581414062,
+          "logins_last_30d": 0.3987856067119911
+        },
+        "probability": 0.422792908601513
+      },
+      {
+        "index": 151,
+        "true_label": 1,
+        "predicted_label": 0,
+        "loss": 0.8188831135287588,
+        "top_features": {
+          "tenure_months": -0.8870738555988747,
+          "monthly_charges": 0.7614182183820573,
+          "logins_last_30d": 0.3987856067119911
+        },
+        "probability": 0.4409238414697397
+      },
+      {
+        "index": 277,
+        "true_label": 0,
+        "predicted_label": 1,
+        "loss": 0.8181789480617842,
+        "top_features": {
+          "tenure_months": -1.4260457423704178,
+          "monthly_charges": 0.8385907449527809,
+          "logins_last_30d": 0.09722264299122599
+        },
+        "probability": 0.5587655658460442
+      },
+      {
+        "index": 104,
+        "true_label": 1,
+        "predicted_label": 0,
+        "loss": 0.796501654910949,
+        "top_features": {
+          "tenure_months": 0.004026330530076611,
+          "monthly_charges": -1.2787216569763211,
+          "logins_last_30d": 0.7003485704327562
+        },
+        "probability": 0.45090362463921557
+      },
+      {
+        "index": 119,
+        "true_label": 1,
+        "predicted_label": 0,
+        "loss": 0.7531756976878528,
+        "top_features": {
+          "tenure_months": -0.10286976034627954,
+          "monthly_charges": 0.5345425951553436,
+          "logins_last_30d": 0.4993065946189128
+        },
+        "probability": 0.47086883877375807
+      },
+      {
+        "index": 193,
+        "true_label": 1,
+        "predicted_label": 0,
+        "loss": 0.7071518700988717,
+        "top_features": {
+          "tenure_months": -0.30049278549584524,
+          "monthly_charges": 0.5885053392987823,
+          "logins_last_30d": 0.800869558339678
+        },
+        "probability": 0.49304645996544294
+      }
+    ],
+    "confusion_analysis": {
+      "confused_pairs": [
+        {
+          "true_class": 0,
+          "predicted_class": 1,
+          "count": 10
+        },
+        {
+          "true_class": 1,
+          "predicted_class": 0,
+          "count": 10
+        }
+      ]
+    },
+    "slice_analysis": {
+      "overall_accuracy": 0.9375,
+      "slices": [
+        {
+          "feature": "tenure_months",
+          "value": "(0.49, 3.249]",
+          "accuracy": 0.9625,
+          "count": 80,
+          "underperforming": false
+        },
+        {
+          "feature": "tenure_months",
+          "value": "(-2.105, -0.747]",
+          "accuracy": 0.9375,
+          "count": 80,
+          "underperforming": false
+        },
+        {
+          "feature": "tenure_months",
+          "value": "(-0.149, 0.49]",
+          "accuracy": 0.9240506329113924,
+          "count": 79,
+          "underperforming": false
+        },
+        {
+          "feature": "tenure_months",
+          "value": "(-0.747, -0.149]",
+          "accuracy": 0.9259259259259259,
+          "count": 81,
+          "underperforming": false
+        },
+        {
+          "feature": "monthly_charges",
+          "value": "(0.205, 0.825]",
+          "accuracy": 0.925,
+          "count": 80,
+          "underperforming": false
+        },
+        {
+          "feature": "monthly_charges",
+          "value": "(-2.2199999999999998, -0.765]",
+          "accuracy": 0.9375,
+          "count": 80,
+          "underperforming": false
+        },
+        {
+          "feature": "monthly_charges",
+          "value": "(-0.765, 0.205]",
+          "accuracy": 0.9875,
+          "count": 80,
+          "underperforming": false
+        },
+        {
+          "feature": "monthly_charges",
+          "value": "(0.825, 1.623]",
+          "accuracy": 0.9,
+          "count": 80,
+          "underperforming": false
+        },
+        {
+          "feature": "logins_last_30d",
+          "value": "(0.7, 2.309]",
+          "accuracy": 0.92,
+          "count": 75,
+          "underperforming": false
+        },
+        {
+          "feature": "logins_last_30d",
+          "value": "(-0.104, 0.7]",
+          "accuracy": 0.8554216867469879,
+          "count": 83,
+          "underperforming": false
+        },
+        {
+          "feature": "logins_last_30d",
+          "value": "(-0.707, -0.104]",
+          "accuracy": 1.0,
+          "count": 72,
+          "underperforming": false
+        },
+        {
+          "feature": "logins_last_30d",
+          "value": "(-2.1359999999999997, -0.707]",
+          "accuracy": 0.9777777777777777,
+          "count": 90,
+          "underperforming": false
+        }
+      ],
+      "underperforming_slices": []
+    }
+  },
+  "fairness_report": {
+    "sensitive_columns": [
+      "account_age_days"
+    ],
+    "metrics": {
+      "account_age_days": {}
+    },
+    "flags": []
+  },
+  "pareto_frontier": [
+    {
+      "model_name": "logistic_regression",
+      "cv_score": 0.7916871321274448,
+      "latency_ms": 0.1360250054858625,
+      "is_pareto_optimal": false
+    },
+    {
+      "model_name": "random_forest",
+      "cv_score": 0.8536720245652217,
+      "latency_ms": 27.255379094276577,
+      "is_pareto_optimal": false
+    },
+    {
+      "model_name": "xgboost",
+      "cv_score": 0.8528647363306028,
+      "latency_ms": 0.4938707919791341,
+      "is_pareto_optimal": false
+    },
+    {
+      "model_name": "lightgbm",
+      "cv_score": 0.8898863087108042,
+      "latency_ms": 0.5221875035203993,
+      "is_pareto_optimal": false
+    },
+    {
+      "model_name": "catboost",
+      "cv_score": 0.8814549437221169,
+      "latency_ms": 0.11541660642251372,
+      "is_pareto_optimal": false
+    },
+    {
+      "model_name": "voting_ensemble",
+      "cv_score": 0.9254327533239467,
+      "latency_ms": 0.0,
+      "is_pareto_optimal": true
+    },
+    {
+      "model_name": "stacking_ensemble",
+      "cv_score": 0.9204342410434977,
+      "latency_ms": 0.0,
+      "is_pareto_optimal": false
+    }
+  ],
+  "llm_report": "/var/folders/p1/5jdps9wn1p7gdsh_t4b3p46h0000gn/T/tmp1mikeanj/demo_dataset/analysis_report.md",
+  "artifact_dir": "/var/folders/p1/5jdps9wn1p7gdsh_t4b3p46h0000gn/T/tmp1mikeanj/demo_dataset",
+  "eda_report": "/var/folders/p1/5jdps9wn1p7gdsh_t4b3p46h0000gn/T/tmp1mikeanj/demo_dataset/eda_report.html"
+}

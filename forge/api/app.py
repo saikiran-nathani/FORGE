@@ -2,20 +2,31 @@
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 
+from forge.api.demo_loader import load_demo_seed
 from forge.api.schemas import ExperimentCreate, ExperimentResponse, ExperimentStatusResponse
 from forge.api.services.deployment_service import deployment_service
 from forge.api.services.experiment_service import ExperimentStatus, store
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Seed a pre-trained demo experiment on startup (no-op if none is committed).
+    load_demo_seed()
+    yield
+
 
 app = FastAPI(
     title="FORGE API",
     description="LLM-powered automated ML pipeline",
     version="0.2.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(

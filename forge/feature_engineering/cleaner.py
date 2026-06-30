@@ -166,9 +166,14 @@ class FeaturePipeline:
             if col in X.columns:
                 X[col] = X[col].astype(str).replace("nan", "MISSING")
         arr = preprocessor.transform(X)
-        names = bundle["feature_names"]
-        selected = bundle.get("selected_features")
+        # Reconstruct the FULL preprocessor output names. bundle["feature_names"]
+        # may be a post-feature-selection subset, which wouldn't match the column
+        # count of the transformed array; rebuild from the fitted preprocessor.
+        names = self._get_feature_names(
+            preprocessor, meta.get("numerical_cols", []), meta.get("categorical_cols", [])
+        )
         result = pd.DataFrame(arr, columns=names)
+        selected = bundle.get("selected_features")
         if selected:
             result = result[[c for c in selected if c in result.columns]]
         return result

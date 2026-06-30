@@ -1,0 +1,44 @@
+[
+  {
+    "model_name": "logistic_regression",
+    "cv_score": 0.7916871321274448,
+    "latency_ms": 0.1360250054858625,
+    "is_pareto_optimal": false
+  },
+  {
+    "model_name": "random_forest",
+    "cv_score": 0.8536720245652217,
+    "latency_ms": 27.255379094276577,
+    "is_pareto_optimal": false
+  },
+  {
+    "model_name": "xgboost",
+    "cv_score": 0.8528647363306028,
+    "latency_ms": 0.4938707919791341,
+    "is_pareto_optimal": false
+  },
+  {
+    "model_name": "lightgbm",
+    "cv_score": 0.8898863087108042,
+    "latency_ms": 0.5221875035203993,
+    "is_pareto_optimal": false
+  },
+  {
+    "model_name": "catboost",
+    "cv_score": 0.8814549437221169,
+    "latency_ms": 0.11541660642251372,
+    "is_pareto_optimal": false
+  },
+  {
+    "model_name": "voting_ensemble",
+    "cv_score": 0.9254327533239467,
+    "latency_ms": 0.0,
+    "is_pareto_optimal": true
+  },
+  {
+    "model_name": "stacking_ensemble",
+    "cv_score": 0.9204342410434977,
+    "latency_ms": 0.0,
+    "is_pareto_optimal": false
+  }
+]

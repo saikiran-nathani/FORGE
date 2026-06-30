@@ -70,6 +70,10 @@ class ExperimentStore:
             self._experiments[exp_id] = exp
         return exp
 
+    def add(self, exp: Experiment) -> None:
+        with self._lock:
+            self._experiments[exp.id] = exp
+
     def get(self, exp_id: str) -> Experiment | None:
         return self._experiments.get(exp_id)
 
