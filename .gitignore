@@ -27,10 +27,18 @@ frontend/dist/
 frontend/.env
 frontend/.env.local
 
-# Editors / OS
+# Editors / OS / tooling
 .idea/
 .vscode/
 .DS_Store
+.claude/
+.coverage
+htmlcov/
+
+# Personal reference material & tooling — kept local, out of the product repo
+/production-ready-skill/
+/FORGE_CODEBASE_GUIDE.md
+/PRODUCTION_GUIDEBOOK.md
 
 # Secrets
 .env

@@ -17,6 +17,8 @@ class ExperimentResponse(BaseModel):
     status: str
     created_at: str
     progress: str
+    stage: str = ""
+    progress_log: list[str] = []
     error: str = ""
     result: dict = {}
 
@@ -25,4 +27,6 @@ class ExperimentStatusResponse(BaseModel):
     id: str
     status: str
     progress: str
+    stage: str = ""
+    progress_log: list[str] = []
     error: str = ""

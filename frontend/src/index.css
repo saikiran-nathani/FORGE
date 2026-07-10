@@ -2,18 +2,216 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg: #0a0a0b;
+  --bg2: #0f0e11;
+  --card: #141318;
+  --line: #26242c;
+  --ember: #ff5a1e;
+  --amber: #ffa23c;
+  --hot: #ffe6c2;
+  --steel: #8b8f99;
+  --ink: #e9e6e1;
+  --ember-grad: linear-gradient(100deg, #ff4d00 0%, #ff7a1f 38%, #ffae3c 70%, #ffe6c2 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  @apply bg-forge-bg text-slate-200 antialiased;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Sora', ui-sans-serif, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
-.card {
-  @apply bg-forge-card rounded-xl border border-slate-700/50 p-6;
+::selection {
+  background: rgba(255, 90, 30, 0.3);
+  color: #fff;
 }
 
-.btn-primary {
-  @apply bg-forge-accent text-slate-900 font-semibold px-4 py-2 rounded-lg hover:bg-sky-300 transition;
+/* ---- Atmosphere: furnace glow + blueprint grid + grain ------------------ */
+.atmos {
+  position: relative;
+  min-height: 100vh;
+  isolation: isolate;
+}
+.atmos::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(70% 55% at 50% 108%, rgba(255, 90, 30, 0.22), transparent 62%),
+    radial-gradient(45% 40% at 84% 6%, rgba(255, 162, 60, 0.08), transparent 60%),
+    radial-gradient(40% 40% at 12% 18%, rgba(120, 90, 255, 0.05), transparent 60%);
+  animation: glowPulse 9s ease-in-out infinite;
+  pointer-events: none;
+}
+.atmos::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: 68px 68px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 0%, transparent 75%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 0%, transparent 75%);
+  pointer-events: none;
+}
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.input {
-  @apply w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 focus:outline-none focus:border-forge-accent;
+/* ---- Typography helpers ------------------------------------------------- */
+.font-display { font-family: 'Chakra Petch', sans-serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+.kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--steel);
+}
+
+.gradient-text {
+  background: var(--ember-grad);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: heatFlow 8s ease infinite;
+}
+
+/* ---- Component layer ---------------------------------------------------- */
+@layer components {
+  .card {
+    @apply rounded-xl border p-6;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0));
+    border-color: var(--line);
+    position: relative;
+    transition: border-color 0.25s, box-shadow 0.35s, transform 0.25s;
+  }
+  .card:hover {
+    border-color: rgba(255, 90, 30, 0.35);
+    box-shadow: 0 14px 50px -22px rgba(255, 90, 30, 0.55);
+  }
+  .btn-primary {
+    @apply font-semibold px-5 py-2.5 rounded-lg inline-flex items-center justify-center gap-2;
+    background: var(--ember-grad);
+    background-size: 160% 100%;
+    color: #160b04;
+    border: 0;
+    cursor: pointer;
+    transition: background-position 0.5s, box-shadow 0.35s, transform 0.15s;
+    box-shadow: 0 8px 30px -10px rgba(255, 90, 30, 0.6);
+  }
+  .btn-primary:hover { background-position: 100% 0; box-shadow: 0 10px 38px -8px rgba(255, 122, 31, 0.75); }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+  .btn-ghost {
+    @apply font-medium px-5 py-2.5 rounded-lg inline-flex items-center justify-center gap-2;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.02);
+    cursor: pointer;
+    transition: border-color 0.25s, color 0.25s, background 0.25s;
+  }
+  .btn-ghost:hover { border-color: rgba(255, 90, 30, 0.5); color: var(--hot); }
+  .input {
+    @apply w-full rounded-lg px-3.5 py-2.5;
+    background: #0e0d11;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input::placeholder { color: #5c5f68; }
+  .input:focus {
+    outline: none;
+    border-color: var(--ember);
+    box-shadow: 0 0 0 3px rgba(255, 90, 30, 0.16);
+  }
+}
+
+/* ---- Reveal-on-view ----------------------------------------------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: opacity, transform;
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---- Ember particles ---------------------------------------------------- */
+.ember-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.ember {
+  position: absolute;
+  bottom: -12px;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--amber);
+  box-shadow: 0 0 8px 1px rgba(255, 140, 40, 0.8);
+  animation: riseUp linear infinite;
+}
+
+/* ---- Pipeline connector ------------------------------------------------- */
+.flowline {
+  background: linear-gradient(90deg, transparent, rgba(255, 122, 31, 0.5), transparent);
+  background-size: 220% 100%;
+  animation: heatFlow 4s linear infinite;
+}
+
+/* ---- Keyframes ---------------------------------------------------------- */
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+@keyframes heatFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+@keyframes riseUp {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  12% { opacity: 1; }
+  80% { opacity: 0.9; }
+  100% { transform: translateY(-86vh) translateX(14px); opacity: 0; }
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, .reveal { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1; transform: none; }
 }

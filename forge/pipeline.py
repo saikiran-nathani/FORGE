@@ -70,11 +70,20 @@ class PipelineResult:
 class ForgePipeline:
     """Full pipeline: profile → LLM features → train → evaluate → explain → report."""
 
-    def __init__(self, config: ForgeConfig):
+    def __init__(self, config: ForgeConfig, progress_cb=None):
         self.config = config
         self.router = TaskRouter()
         self.metrics_calc = MetricsCalculator()
         self.llm = LLMClient()
+        self._progress_cb = progress_cb
+
+    def _progress(self, stage: str, message: str) -> None:
+        """Report a stage/step update to an optional consumer (e.g. the API)."""
+        if self._progress_cb is not None:
+            try:
+                self._progress_cb(stage, message)
+            except Exception:
+                pass
 
     def run(self, dataset_path: Path) -> PipelineResult:
         config = self.config
@@ -85,13 +94,16 @@ class ForgePipeline:
         console.print("[bold blue]FORGE[/bold blue] — Loading dataset...")
         df = self._load_dataset(dataset_path)
         console.print(f"  Loaded {len(df):,} rows × {len(df.columns)} columns")
+        self._validate_target(df)
         n_original_features = len(df.columns) - 1
 
         console.print("\n[bold]Stage 1:[/bold] Data Profiling")
+        self._progress("profiling", f"Profiling {len(df):,} rows × {len(df.columns)} columns…")
         profiler = StatisticalProfiler(config.target_column, config.task_description)
         profile = profiler.profile(df)
         console.print(f"  Quality score: {profile.quality_score}/100")
         console.print(f"  Recommended metric: {profile.recommended_metric}")
+        self._progress("profiling", f"Quality {profile.quality_score}/100 · metric {profile.recommended_metric}")
 
         semantic = SemanticProfiler(self.llm).profile(
             profile, config.task_description, config.target_column
@@ -106,6 +118,7 @@ class ForgePipeline:
         console.print(f"  EDA report: {eda_path}")
 
         console.print("\n[bold]Stage 2:[/bold] Feature Engineering")
+        self._progress("feature_engineering", "Engineering & selecting features…")
         working_df = df
         fe_result = None
         if config.enable_llm:
@@ -115,6 +128,7 @@ class ForgePipeline:
             fe_result = engineer.engineer(df, profile, semantic)
             working_df = fe_result.df
             console.print(f"  LLM features: {len(fe_result.generated_features)} transformations")
+            self._progress("feature_engineering", f"Generated {len(fe_result.generated_features)} new features")
 
         fe = FeaturePipeline(config.target_column, config.random_state)
         features = fe.fit_transform(working_df, profile, config.test_size)
@@ -142,9 +156,10 @@ class ForgePipeline:
 
         model_registry = self._model_registry(task_type, config)
         dl_trials = min(config.hpo_trials_per_model, 5)
+        n_models = len(model_registry)
         model_results: list[ModelResult] = []
         with mlflow.start_run(run_name=dataset_path.stem):
-            for model_cls in model_registry:
+            for i, model_cls in enumerate(model_registry, start=1):
                 is_dl = getattr(model_cls, "family", "") == "deep_learning"
                 trials = dl_trials if is_dl else config.hpo_trials_per_model
                 opt = OptunaOptimizer(
@@ -155,12 +170,14 @@ class ForgePipeline:
                     random_state=config.random_state,
                 )
                 console.print(f"  Training [cyan]{model_cls.name}[/cyan]...")
+                self._progress("training", f"Training & tuning {model_cls.name} · model {i}/{n_models}")
                 result = opt.optimize_model(model_cls, features.X_train, features.y_train)
                 model_results.append(result)
                 console.print(
                     f"    CV {result.metric_name}: {result.cv_score:.4f} "
                     f"(±{result.cv_score_std:.4f}) | {result.inference_latency_ms:.1f}ms"
                 )
+                self._progress("training", f"{model_cls.name}: {result.metric_name} {result.cv_score:.4f} ({i}/{n_models})")
                 mlflow.log_metrics({
                     f"{result.model_name}_cv_score": result.cv_score,
                     f"{result.model_name}_latency_ms": result.inference_latency_ms,
@@ -173,6 +190,7 @@ class ForgePipeline:
                     (ensemble_builder.build_stacking, "stacking"),
                 ]:
                     console.print(f"  Training [cyan]{label}[/cyan] ensemble...")
+                    self._progress("training", f"Building {label} ensemble…")
                     model, name, cv_score = build_fn(
                         model_results, features.X_train, features.y_train
                     )
@@ -193,6 +211,7 @@ class ForgePipeline:
         console.print(f"  Pareto-optimal models: {sum(1 for p in pareto if p['is_pareto_optimal'])}")
 
         console.print("\n[bold]Stage 4:[/bold] Evaluation + Explainability")
+        self._progress("evaluation", f"Evaluating best model: {best.model_name}…")
         y_pred = best.fitted_model.predict(features.X_test)
         y_proba = getattr(best.fitted_model, "predict_proba", lambda x: None)(features.X_test)
 
@@ -206,6 +225,7 @@ class ForgePipeline:
         explain_dir = artifact_dir / "explainability"
         shap_summary: dict[str, Any] = {}
         if config.enable_shap:
+            self._progress("evaluation", "Computing SHAP explanations…")
             shap_summary = ExplainabilityEngine().explain(
                 best.fitted_model, features.X_test, features.feature_names,
                 best.model_name, explain_dir, features.y_test, task_str,
@@ -223,6 +243,7 @@ class ForgePipeline:
 
         fairness_report: dict[str, Any] = {}
         if config.enable_fairness:
+            self._progress("evaluation", "Auditing fairness across subgroups…")
             test_indices = features.X_test.index
             fairness_report = FairnessAuditor().audit(
                 df.loc[test_indices], features.y_test.values, y_pred, y_proba,
@@ -241,6 +262,7 @@ class ForgePipeline:
             )
             console.print(f"  LLM report: {report_path}")
 
+        self._progress("finalizing", "Packaging model, artifacts & model card…")
         df.drop(columns=[config.target_column], errors="ignore").to_parquet(
             artifact_dir / "reference_data.parquet"
         )
@@ -338,6 +360,21 @@ class ForgePipeline:
             }
             for r in results
         ]
+
+    def _validate_target(self, df: pd.DataFrame) -> None:
+        target = self.config.target_column
+        if target in df.columns:
+            return
+        import difflib
+
+        matches = difflib.get_close_matches(str(target), [str(c) for c in df.columns], n=1)
+        hint = f" Did you mean '{matches[0]}'?" if matches else ""
+        cols = ", ".join(str(c) for c in list(df.columns)[:20])
+        more = "" if len(df.columns) <= 20 else f", … (+{len(df.columns) - 20} more)"
+        raise ValueError(
+            f"Target column '{target}' was not found in the dataset.{hint} "
+            f"Available columns: {cols}{more}"
+        )
 
     def _load_dataset(self, path: Path) -> pd.DataFrame:
         suffix = path.suffix.lower()

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { deployExperiment, getExperiment, predict, getMonitoring } from '../services/api';
+import { deployExperiment, getExperiment, getMonitoring, modelCardUrl } from '../services/api';
 
 export default function DeployPage() {
   const { id } = useParams<{ id: string }>();
@@ -61,7 +61,7 @@ export default function DeployPage() {
             <div className="flex gap-4 mt-4">
               <Link to={`/experiments/${id}/playground`} className="btn-primary">Prediction Playground</Link>
               <Link to={`/experiments/${id}/monitoring`} className="text-forge-accent hover:underline">Monitoring →</Link>
-              <a href={`/api/v1/experiments/${id}/model-card`} target="_blank" rel="noreferrer" className="text-forge-accent hover:underline">Model Card</a>
+              <a href={modelCardUrl(id!)} target="_blank" rel="noreferrer" className="text-forge-accent hover:underline">Model Card</a>
             </div>
           </div>
           {monitoring?.performance && (

@@ -91,6 +91,8 @@ def get_status(exp_id: str):
         id=exp.id,
         status=exp.status.value,
         progress=exp.progress,
+        stage=exp.stage,
+        progress_log=exp.progress_log,
         error=exp.error,
     )
 
@@ -228,6 +230,8 @@ def _to_response(exp) -> ExperimentResponse:
         status=exp.status.value,
         created_at=exp.created_at,
         progress=exp.progress,
+        stage=exp.stage,
+        progress_log=exp.progress_log,
         error=exp.error,
         result=exp.result,
     )

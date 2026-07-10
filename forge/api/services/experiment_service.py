@@ -35,6 +35,8 @@ class Experiment:
     error: str = ""
     result: dict[str, Any] = field(default_factory=dict)
     progress: str = ""
+    stage: str = ""
+    progress_log: list[str] = field(default_factory=list)
 
 
 class ExperimentStore:
@@ -90,7 +92,16 @@ class ExperimentStore:
 
     def _run_pipeline(self, exp: Experiment, trials: int, fast_mode: bool) -> None:
         exp.status = ExperimentStatus.RUNNING
-        exp.progress = "Starting pipeline..."
+        exp.stage = "profiling"
+        exp.progress = "Starting pipeline…"
+
+        def on_progress(stage: str, message: str) -> None:
+            exp.stage = stage
+            exp.progress = message
+            exp.progress_log.append(message)
+            if len(exp.progress_log) > 16:
+                del exp.progress_log[:-16]
+
         try:
             config = ForgeConfig(
                 target_column=exp.target_column,
@@ -103,10 +114,10 @@ class ExperimentStore:
                 enable_ensembles=True,
                 enable_llm=True,
             )
-            pipeline = ForgePipeline(config)
-            exp.progress = "Running full pipeline..."
+            pipeline = ForgePipeline(config, progress_cb=on_progress)
             result = pipeline.run(exp.dataset_path)
             exp.status = ExperimentStatus.COMPLETED
+            exp.stage = "done"
             exp.result = {
                 "best_model_name": result.best_model_name,
                 "best_metrics": result.best_metrics,
@@ -126,6 +137,7 @@ class ExperimentStore:
             exp.progress = "Complete"
         except Exception as exc:
             exp.status = ExperimentStatus.FAILED
+            exp.stage = "failed"
             exp.error = str(exc)
             exp.progress = "Failed"
 

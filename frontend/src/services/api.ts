@@ -6,6 +6,8 @@ export interface Experiment {
   status: 'pending' | 'running' | 'completed' | 'failed';
   created_at: string;
   progress: string;
+  stage: string;
+  progress_log: string[];
   error: string;
   result: Record<string, unknown>;
 }
@@ -66,6 +68,10 @@ export async function predict(id: string, features: Record<string, unknown>): Pr
 
 export function reportUrl(id: string): string {
   return `${API}/experiments/${id}/report`;
+}
+
+export function modelCardUrl(id: string): string {
+  return `${API}/experiments/${id}/model-card`;
 }
 
 export async function getModelInfo(id: string): Promise<Record<string, unknown>> {
