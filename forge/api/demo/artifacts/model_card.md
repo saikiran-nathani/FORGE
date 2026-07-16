@@ -1,6 +1,6 @@
 # Model Card: voting_ensemble
 
-**Generated:** 2026-06-30 19:24 UTC
+**Generated:** 2026-07-10 22:37 UTC
 
 ## Model Details
 - **Model:** voting_ensemble
@@ -15,6 +15,7 @@
 
 ## Performance Metrics
 - **accuracy:** 0.9375
+- **balanced_accuracy:** 0.9193
 - **f1_macro:** 0.9193
 - **f1_weighted:** 0.9375
 - **precision_macro:** 0.9193

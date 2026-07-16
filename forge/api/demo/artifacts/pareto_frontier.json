@@ -2,31 +2,31 @@
   {
     "model_name": "logistic_regression",
     "cv_score": 0.7916871321274448,
-    "latency_ms": 0.1360250054858625,
+    "latency_ms": 0.1353750005364418,
     "is_pareto_optimal": false
   },
   {
     "model_name": "random_forest",
     "cv_score": 0.8536720245652217,
-    "latency_ms": 27.255379094276577,
+    "latency_ms": 16.08530829544179,
     "is_pareto_optimal": false
   },
   {
     "model_name": "xgboost",
     "cv_score": 0.8528647363306028,
-    "latency_ms": 0.4938707919791341,
+    "latency_ms": 0.46040830202400684,
     "is_pareto_optimal": false
   },
   {
     "model_name": "lightgbm",
     "cv_score": 0.8898863087108042,
-    "latency_ms": 0.5221875035203993,
+    "latency_ms": 0.5053000000771135,
     "is_pareto_optimal": false
   },
   {
     "model_name": "catboost",
     "cv_score": 0.8814549437221169,
-    "latency_ms": 0.11541660642251372,
+    "latency_ms": 0.13028749963268638,
     "is_pareto_optimal": false
   },
   {

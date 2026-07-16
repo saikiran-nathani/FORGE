@@ -16,13 +16,13 @@
       "index": 110,
       "true_label": 1,
       "predicted_label": 0,
-      "loss": 3.0841235033123406,
+      "loss": 3.08412350331234,
       "top_features": {
         "tenure_months": 0.7190623669803238,
         "monthly_charges": -0.648576064075525,
         "logins_last_30d": -0.8074662481710694
       },
-      "probability": 0.045770133694559595
+      "probability": 0.0457701336945596
     },
     {
       "index": 307,
@@ -82,19 +82,19 @@
         "monthly_charges": 0.5658758014321791,
         "logins_last_30d": 0.2982646188050694
       },
-      "probability": 0.19363623108275552
+      "probability": 0.1936362310827555
     },
     {
       "index": 89,
       "true_label": 0,
       "predicted_label": 1,
-      "loss": 1.3895427507974187,
+      "loss": 1.3895427507974192,
       "top_features": {
         "tenure_months": -0.8197023697524318,
         "monthly_charges": 1.0202072924462888,
         "logins_last_30d": 0.7003485704327562
       },
-      "probability": 0.7508107798419993
+      "probability": 0.7508107798419994
     },
     {
       "index": 147,
@@ -196,49 +196,49 @@
       "index": 277,
       "true_label": 0,
       "predicted_label": 1,
-      "loss": 0.8181789480617842,
+      "loss": 0.8181789480617839,
       "top_features": {
         "tenure_months": -1.4260457423704178,
         "monthly_charges": 0.8385907449527809,
         "logins_last_30d": 0.09722264299122599
       },
-      "probability": 0.5587655658460442
+      "probability": 0.5587655658460441
     },
     {
       "index": 104,
       "true_label": 1,
       "predicted_label": 0,
-      "loss": 0.796501654910949,
+      "loss": 0.7965016549109494,
       "top_features": {
         "tenure_months": 0.004026330530076611,
         "monthly_charges": -1.2787216569763211,
         "logins_last_30d": 0.7003485704327562
       },
-      "probability": 0.45090362463921557
+      "probability": 0.45090362463921546
     },
     {
       "index": 119,
       "true_label": 1,
       "predicted_label": 0,
-      "loss": 0.7531756976878528,
+      "loss": 0.7531756976878526,
       "top_features": {
         "tenure_months": -0.10286976034627954,
         "monthly_charges": 0.5345425951553436,
         "logins_last_30d": 0.4993065946189128
       },
-      "probability": 0.47086883877375807
+      "probability": 0.4708688387737581
     },
     {
       "index": 193,
       "true_label": 1,
       "predicted_label": 0,
-      "loss": 0.7071518700988717,
+      "loss": 0.7071518700988716,
       "top_features": {
         "tenure_months": -0.30049278549584524,
         "monthly_charges": 0.5885053392987823,
         "logins_last_30d": 0.800869558339678
       },
-      "probability": 0.49304645996544294
+      "probability": 0.493046459965443
     }
   ],
   "confusion_analysis": {

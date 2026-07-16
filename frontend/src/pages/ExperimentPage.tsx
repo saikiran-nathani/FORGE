@@ -16,6 +16,14 @@ function fmtElapsed(sec: number) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+// Display order for the metrics table; unknown metrics fall to the end.
+const METRIC_ORDER = [
+  'balanced_accuracy', 'accuracy', 'f1', 'f1_macro', 'f1_weighted', 'mcc', 'cohen_kappa',
+  'roc_auc', 'pr_auc', 'precision_macro', 'recall_macro', 'brier_score', 'log_loss', 'ece',
+  'rmse', 'mae', 'r2', 'adjusted_r2', 'mape', 'max_error',
+];
+const fmtNum = (v: unknown) => (typeof v === 'number' ? v.toFixed(4) : v == null ? '—' : String(v));
+
 export default function ExperimentPage() {
   const { id } = useParams<{ id: string }>();
   const [exp, setExp] = useState<Experiment | null>(null);
@@ -58,6 +66,14 @@ export default function ExperimentPage() {
   const metrics = (result.best_metrics as Record<string, number>) || {};
   const shap = (result.shap_summary as { top_features?: Array<{ feature: string; mean_abs_shap: number }> }) || {};
   const features = (result.generated_features as Array<{ source_column: string; new_columns: string[] }>) || [];
+  const baseline = (result.baseline_metrics as Record<string, number>) || {};
+  const ctx = (result.eval_context as Record<string, any>) || {};
+  const warnings = (result.warnings as string[]) || [];
+  const confusion = (metrics as any).confusion_matrix as number[][] | undefined;
+  const metricKeys = Array.from(new Set([...Object.keys(metrics), ...Object.keys(baseline)]))
+    .filter((k) => k !== 'confusion_matrix' && k !== 'error')
+    .sort((a, b) => ((METRIC_ORDER.indexOf(a) + 1) || 99) - ((METRIC_ORDER.indexOf(b) + 1) || 99));
+  const hasBaseline = Object.keys(baseline).length > 0 && !('error' in baseline);
 
   return (
     <div className="space-y-8">
@@ -82,17 +98,40 @@ export default function ExperimentPage() {
 
       {exp.status === 'completed' && (
         <>
+          {warnings.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {warnings.map((w, i) => (
+                <div key={i} className="flex items-start gap-2.5 rounded-lg border border-forge-amber/40 bg-forge-amber/[0.06] px-3.5 py-2.5">
+                  <span className="text-forge-amber mt-0.5">⚠</span>
+                  <span className="font-mono text-xs text-forge-amber/90 leading-relaxed">{w}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="grid md:grid-cols-3 gap-4">
-            <StatCard label="Best Model" value={String(result.best_model_name || '—')} />
-            <StatCard label="Quality Score" value={`${result.quality_score ?? '—'}/100`} />
-            <StatCard label="Task Type" value={String(result.task_type || '—')} />
+            <StatCard label={`Selected model${ctx.selection_metric ? ` · by cv ${ctx.selection_metric}` : ''}`} value={String(result.best_model_name || '—')} />
+            <StatCard label="Task type" value={String(result.task_type || '—')} />
+            <StatCard label="Dataset" value={`${ctx.n_train ?? '?'} train · ${ctx.n_test ?? '?'} test`} />
+          </div>
+
+          <div className="card">
+            <div className="flex flex-wrap gap-x-8 gap-y-2 font-mono text-xs text-forge-steel">
+              {ctx.positive_class != null && <span>positive class · <span className="text-forge-hot">{String(ctx.positive_class)}</span></span>}
+              {ctx.majority_fraction != null && <span>base rate · <span className="text-forge-hot">{(Number(ctx.majority_fraction) * 100).toFixed(0)}%</span> majority</span>}
+              {ctx.test_class_counts && <span>test split · <span className="text-forge-hot">{Object.entries(ctx.test_class_counts).map(([k, v]) => `${v} ${k}`).join(' / ')}</span></span>}
+              {ctx.cv_best_score != null && ctx.test_metric_value != null && (
+                <span>{ctx.selection_metric} · CV <span className="text-forge-hot">{Number(ctx.cv_best_score).toFixed(3)}</span> → test <span className="text-forge-hot">{Number(ctx.test_metric_value).toFixed(3)}</span></span>
+              )}
+              {result.quality_score != null && <span>data quality · {String(result.quality_score)}/100</span>}
+            </div>
           </div>
 
           {id && (
             <div className="card flex items-center justify-between gap-4">
               <div>
                 <h2 className="font-display text-lg font-semibold text-forge-hot">Deploy model</h2>
-                <p className="text-sm text-forge-steel">One-click production deployment with monitoring.</p>
+                <p className="text-sm text-forge-steel">One-click production deployment. Available regardless of scores — you judge the numbers.</p>
               </div>
               <Link to={`/experiments/${id}/deploy`} className="btn-primary">Deploy →</Link>
             </div>
@@ -108,16 +147,38 @@ export default function ExperimentPage() {
           )}
 
           <div className="card">
-            <h2 className="font-display text-lg font-semibold mb-4 text-forge-hot">Test metrics</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-              {Object.entries(metrics).filter(([k]) => k !== 'confusion_matrix').map(([k, v]) => (
-                <div key={k}>
-                  <p className="kicker text-forge-steel/80">{k.replace(/_/g, ' ')}</p>
-                  <p className="text-xl font-mono text-forge-hot mt-1">{typeof v === 'number' ? v.toFixed(4) : String(v)}</p>
-                </div>
-              ))}
+            <h2 className="font-display text-lg font-semibold mb-1 text-forge-hot">Test metrics</h2>
+            <p className="font-mono text-[0.7rem] text-forge-steel/70 mb-4">
+              your model vs a trivial baseline ({result.task_type === 'regression' ? 'mean prediction' : 'always predict majority class'}) on the same hold-out split — compare and judge
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="kicker text-forge-steel/70 border-b border-forge-line">
+                    <th className="text-left py-2 font-normal">Metric</th>
+                    <th className="text-right py-2 font-normal">Model</th>
+                    {hasBaseline && <th className="text-right py-2 font-normal">Baseline</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {metricKeys.map((k) => (
+                    <tr key={k} className="border-b border-forge-line/60">
+                      <td className="py-2 text-forge-steel">{k.replace(/_/g, ' ')}</td>
+                      <td className="text-right py-2 font-mono text-forge-hot">{fmtNum((metrics as any)[k])}</td>
+                      {hasBaseline && <td className="text-right py-2 font-mono text-forge-steel/80">{fmtNum((baseline as any)[k])}</td>}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
+
+          {confusion && Array.isArray(confusion) && confusion.length > 0 && (
+            <div className="card">
+              <h2 className="font-display text-lg font-semibold mb-4 text-forge-hot">Confusion matrix</h2>
+              <ConfusionMatrix matrix={confusion} labels={ctx.test_class_counts ? Object.keys(ctx.test_class_counts) : undefined} />
+            </div>
+          )}
 
           <div className="card">
             <h2 className="font-display text-lg font-semibold mb-4 text-forge-hot">Model comparison</h2>
@@ -312,6 +373,42 @@ function RunningView({ exp }: { exp: Experiment }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function ConfusionMatrix({ matrix, labels }: { matrix: number[][]; labels?: string[] }) {
+  const n = matrix.length;
+  const names = labels && labels.length === n ? labels : matrix.map((_, i) => `class ${i}`);
+  const max = Math.max(1, ...matrix.flat());
+  return (
+    <div className="overflow-x-auto">
+      <table className="text-sm font-mono border-separate border-spacing-1">
+        <thead>
+          <tr>
+            <td className="p-2 text-forge-steel/50 text-[0.65rem]">true ↓ / pred →</td>
+            {names.map((nm) => (
+              <th key={nm} className="p-2 text-forge-steel font-normal text-xs">{nm}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {matrix.map((row, i) => (
+            <tr key={i}>
+              <th className="p-2 text-left text-forge-steel font-normal text-xs">{names[i]}</th>
+              {row.map((v, j) => (
+                <td
+                  key={j}
+                  className="p-2 text-center rounded min-w-[3rem]"
+                  style={{ background: `rgba(255,90,30,${(v / max) * 0.5})`, color: i === j ? 'var(--hot)' : 'var(--ink)' }}
+                >
+                  {v}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import numpy as np
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
+    balanced_accuracy_score,
     brier_score_loss,
     cohen_kappa_score,
     confusion_matrix,
@@ -48,6 +49,7 @@ class MetricsCalculator:
     ) -> dict[str, Any]:
         metrics: dict[str, Any] = {
             "accuracy": float(accuracy_score(y_true, y_pred)),
+            "balanced_accuracy": float(balanced_accuracy_score(y_true, y_pred)),
             "f1_macro": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
             "f1_weighted": float(f1_score(y_true, y_pred, average="weighted", zero_division=0)),
             "precision_macro": float(precision_score(y_true, y_pred, average="macro", zero_division=0)),

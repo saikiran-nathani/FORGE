@@ -65,6 +65,9 @@ class PipelineResult:
     fairness_report: dict[str, Any]
     llm_report_path: str
     output_dir: Path
+    baseline_metrics: dict[str, Any]
+    eval_context: dict[str, Any]
+    warnings: list[str]
 
 
 class ForgePipeline:
@@ -222,6 +225,13 @@ class ForgePipeline:
         )
         self._print_results(model_results, best, test_metrics)
 
+        # Honest reference numbers — surfaced, never used to gate or alter the model.
+        baseline_metrics = self._baseline_metrics(features, task_str, is_binary)
+        eval_context = self._build_eval_context(features, task_type, best, test_metrics)
+        warnings = self._build_warnings(eval_context, test_metrics, baseline_metrics, task_type)
+        for w in warnings:
+            console.print(f"  [yellow]⚠[/yellow] {w}")
+
         explain_dir = artifact_dir / "explainability"
         shap_summary: dict[str, Any] = {}
         if config.enable_shap:
@@ -307,7 +317,87 @@ class ForgePipeline:
             fairness_report=fairness_report,
             llm_report_path=str(report_path),
             output_dir=artifact_dir,
+            baseline_metrics=baseline_metrics,
+            eval_context=eval_context,
+            warnings=warnings,
         )
+
+    def _baseline_metrics(self, features, task_str: str, is_binary: bool) -> dict[str, Any]:
+        """Trivial baseline (majority class / mean) on the same split — a reference point."""
+        try:
+            if task_str == "regression":
+                from sklearn.dummy import DummyRegressor
+
+                dummy = DummyRegressor(strategy="mean")
+                dummy.fit(features.X_train, features.y_train)
+                y_pred = dummy.predict(features.X_test)
+                proba = None
+            else:
+                from sklearn.dummy import DummyClassifier
+
+                dummy = DummyClassifier(strategy="most_frequent")
+                dummy.fit(features.X_train, features.y_train)
+                y_pred = dummy.predict(features.X_test)
+                proba = getattr(dummy, "predict_proba", lambda x: None)(features.X_test)
+            return self.metrics_calc.compute(features.y_test.values, y_pred, proba, task_str, is_binary)
+        except Exception as exc:  # baseline is best-effort; never break the run
+            return {"error": str(exc)}
+
+    def _build_eval_context(self, features, task_type: TaskType, best, test_metrics: dict) -> dict[str, Any]:
+        import numpy as np
+
+        ctx: dict[str, Any] = {
+            "n_train": int(len(features.X_train)),
+            "n_test": int(len(features.X_test)),
+            "selection_metric": best.metric_name,
+            "cv_best_score": float(best.cv_score),
+        }
+        test_val = test_metrics.get(best.metric_name)
+        if isinstance(test_val, (int, float)):
+            ctx["test_metric_value"] = float(test_val)
+            ctx["cv_test_gap"] = float(best.cv_score) - float(test_val)
+        if task_type != TaskType.REGRESSION:
+            le = features.label_encoder
+            classes, counts = np.unique(features.y_test.values, return_counts=True)
+            dist = {}
+            for c, n in zip(classes, counts):
+                label = le.inverse_transform([int(c)])[0] if le is not None else str(c)
+                dist[str(label)] = int(n)
+            ctx["test_class_counts"] = dist
+            total = sum(dist.values())
+            if total:
+                ctx["majority_fraction"] = max(dist.values()) / total
+                ctx["minority_fraction"] = min(dist.values()) / total
+            if le is not None and task_type == TaskType.BINARY_CLASSIFICATION and len(le.classes_) == 2:
+                ctx["positive_class"] = str(le.classes_[1])
+        return ctx
+
+    def _build_warnings(self, ctx: dict, test_metrics: dict, baseline_metrics: dict, task_type: TaskType) -> list[str]:
+        warnings: list[str] = []
+        n = ctx.get("n_train", 0) + ctx.get("n_test", 0)
+        if n and n < 500:
+            warnings.append(f"Small dataset ({n} rows): CV/HPO estimates are high-variance and may not generalize.")
+        mino = ctx.get("minority_fraction")
+        if mino is not None and mino < 0.2:
+            warnings.append(f"Imbalanced target ({mino:.0%} minority): prefer balanced accuracy / MCC / minority recall over accuracy.")
+        gap = ctx.get("cv_test_gap")
+        if gap is not None and abs(gap) > 0.15:
+            warnings.append(
+                f"Large CV→test gap on {ctx.get('selection_metric')} "
+                f"({ctx.get('cv_best_score'):.3f}→{ctx.get('test_metric_value'):.3f}): possible overfitting or split variance."
+            )
+        if isinstance(baseline_metrics, dict) and "error" not in baseline_metrics:
+            if task_type == TaskType.REGRESSION:
+                bm, base = test_metrics.get("rmse"), baseline_metrics.get("rmse")
+                if bm is not None and base is not None and bm >= base:
+                    warnings.append(f"Model RMSE ({bm:.3f}) does not beat the mean-prediction baseline ({base:.3f}).")
+            else:
+                for m in ("balanced_accuracy", "accuracy"):
+                    bm, base = test_metrics.get(m), baseline_metrics.get(m)
+                    if bm is not None and base is not None and bm < base:
+                        warnings.append(f"Model {m.replace('_', ' ')} ({bm:.3f}) is below the majority-class baseline ({base:.3f}).")
+                        break
+        return warnings
 
     def _model_registry(self, task_type: TaskType, config: ForgeConfig) -> list:
         from forge.training.classical.linear_models import ElasticNetModel, LassoModel, RidgeModel

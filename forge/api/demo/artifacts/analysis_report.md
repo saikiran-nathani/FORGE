@@ -6,6 +6,7 @@ Primary metrics indicate strong performance.
 
 ## Model Metrics
 - accuracy: 0.9375
+- balanced_accuracy: 0.9193
 - f1_macro: 0.9193
 - f1_weighted: 0.9375
 - precision_macro: 0.9193

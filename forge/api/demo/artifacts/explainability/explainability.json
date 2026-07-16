@@ -16,15 +16,15 @@
     "explanations": [
       {
         "feature": "logins_last_30d > 0.70",
-        "weight": 0.4648379318611642
+        "weight": 0.47315087620026436
       },
       {
         "feature": "tenure_months > 0.38",
-        "weight": 0.24406536180686186
+        "weight": 0.2703432668716724
       },
       {
         "feature": "0.23 < monthly_charges <= 0.78",
-        "weight": -0.02360592075787449
+        "weight": -0.01618090687690676
       }
     ]
   },

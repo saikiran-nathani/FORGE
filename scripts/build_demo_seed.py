@@ -44,6 +44,9 @@ def build_result_dict(result) -> dict:
         "error_analysis": result.error_analysis,
         "fairness_report": result.fairness_report,
         "pareto_frontier": result.pareto_frontier,
+        "baseline_metrics": result.baseline_metrics,
+        "eval_context": result.eval_context,
+        "warnings": result.warnings,
         # path fields below are recomputed at load time from the committed location
         "llm_report": result.llm_report_path,
         "artifact_dir": str(result.output_dir),
