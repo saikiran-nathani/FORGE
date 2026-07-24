@@ -174,7 +174,13 @@ class ForgePipeline:
                 )
                 console.print(f"  Training [cyan]{model_cls.name}[/cyan]...")
                 self._progress("training", f"Training & tuning {model_cls.name} · model {i}/{n_models}")
-                result = opt.optimize_model(model_cls, features.X_train, features.y_train)
+                # One misbehaving model family must not sink the whole run.
+                try:
+                    result = opt.optimize_model(model_cls, features.X_train, features.y_train)
+                except Exception as exc:
+                    console.print(f"    [yellow]⚠ {model_cls.name} failed — skipped ({str(exc).splitlines()[0][:80]})[/yellow]")
+                    self._progress("training", f"{model_cls.name} failed — skipped ({i}/{n_models})")
+                    continue
                 model_results.append(result)
                 console.print(
                     f"    CV {result.metric_name}: {result.cv_score:.4f} "
@@ -186,6 +192,12 @@ class ForgePipeline:
                     f"{result.model_name}_latency_ms": result.inference_latency_ms,
                 })
 
+            if not model_results:
+                raise RuntimeError(
+                    "All models failed to train. Check the dataset for issues "
+                    "(unparseable columns, a non-predictive/constant target, or too few rows)."
+                )
+
             if config.enable_ensembles and len(model_results) >= 3:
                 ensemble_builder = EnsembleBuilder(task_type, config.random_state)
                 for build_fn, label in [
@@ -194,9 +206,13 @@ class ForgePipeline:
                 ]:
                     console.print(f"  Training [cyan]{label}[/cyan] ensemble...")
                     self._progress("training", f"Building {label} ensemble…")
-                    model, name, cv_score = build_fn(
-                        model_results, features.X_train, features.y_train
-                    )
+                    try:
+                        model, name, cv_score = build_fn(
+                            model_results, features.X_train, features.y_train
+                        )
+                    except Exception as exc:
+                        console.print(f"    [yellow]⚠ {label} ensemble failed — skipped ({str(exc).splitlines()[0][:80]})[/yellow]")
+                        continue
                     model_results.append(ModelResult(
                         model_name=name, best_params={}, cv_score=cv_score,
                         cv_score_std=0.0, training_time=0.0, inference_latency_ms=0.0,

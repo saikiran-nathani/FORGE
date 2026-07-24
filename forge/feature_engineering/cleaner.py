@@ -229,4 +229,26 @@ class FeaturePipeline:
                 encoder = transformer.named_steps["encoder"]
                 cat_names = encoder.get_feature_names_out(cols)
                 names.extend(cat_names.tolist())
-        return names
+        return self._sanitize_names(names)
+
+    @staticmethod
+    def _sanitize_names(names: list[str]) -> list[str]:
+        """Make feature names safe for all estimators (XGBoost rejects [ ] < >).
+
+        One-hot categories like 'income_<=50K' otherwise crash XGBoost. Applied
+        at both fit and inference so train/serve names stay identical. De-dupes
+        any collisions introduced by the substitution.
+        """
+        import re
+
+        clean: list[str] = []
+        seen: dict[str, int] = {}
+        for n in names:
+            s = re.sub(r"[\[\]<>]", "_", str(n)).strip()
+            if s in seen:
+                seen[s] += 1
+                s = f"{s}__{seen[s]}"
+            else:
+                seen[s] = 0
+            clean.append(s)
+        return clean

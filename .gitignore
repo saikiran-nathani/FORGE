@@ -37,8 +37,7 @@ htmlcov/
 
 # Personal reference material & tooling — kept local, out of the product repo
 /production-ready-skill/
-/FORGE_CODEBASE_GUIDE.md
-/PRODUCTION_GUIDEBOOK.md
+/evaluation-deck/
 
 # Secrets
 .env
