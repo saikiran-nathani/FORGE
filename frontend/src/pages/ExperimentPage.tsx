@@ -64,7 +64,11 @@ export default function ExperimentPage() {
   const result = exp.result || {};
   const models = (result.model_results as Array<{ model_name: string; cv_score: number }>) || [];
   const metrics = (result.best_metrics as Record<string, number>) || {};
-  const shap = (result.shap_summary as { top_features?: Array<{ feature: string; mean_abs_shap: number }> }) || {};
+  const shap = (result.shap_summary as {
+    top_features?: Array<{ feature: string; mean_abs_shap: number }>;
+    shap_status?: string;
+    shap_error?: string;
+  }) || {};
   const features = (result.generated_features as Array<{ source_column: string; new_columns: string[] }>) || [];
   const baseline = (result.baseline_metrics as Record<string, number>) || {};
   const ctx = (result.eval_context as Record<string, any>) || {};
@@ -218,23 +222,29 @@ export default function ExperimentPage() {
             </div>
           )}
 
-          {shap.top_features && (
+          {(shap.top_features || shap.shap_status) && (
             <div className="card">
               <h2 className="font-display text-lg font-semibold mb-4 text-forge-hot">SHAP feature importance</h2>
-              <div className="space-y-2.5">
-                {shap.top_features.slice(0, 10).map((f) => (
-                  <div key={f.feature} className="flex items-center gap-3">
-                    <span className="text-sm w-48 truncate font-mono text-forge-steel">{f.feature}</span>
-                    <div className="flex-1 bg-[#0e0d11] rounded-full h-2 border border-forge-line">
-                      <div
-                        className="h-full rounded-full"
-                        style={{ width: `${Math.min(100, f.mean_abs_shap * 500)}%`, background: 'var(--ember-grad)' }}
-                      />
+              {shap.top_features && shap.top_features.length > 0 ? (
+                <div className="space-y-2.5">
+                  {shap.top_features.slice(0, 10).map((f) => (
+                    <div key={f.feature} className="flex items-center gap-3">
+                      <span className="text-sm w-48 truncate font-mono text-forge-steel">{f.feature}</span>
+                      <div className="flex-1 bg-[#0e0d11] rounded-full h-2 border border-forge-line">
+                        <div
+                          className="h-full rounded-full"
+                          style={{ width: `${Math.min(100, f.mean_abs_shap * 500)}%`, background: 'var(--ember-grad)' }}
+                        />
+                      </div>
+                      <span className="text-xs font-mono text-forge-steel/80">{f.mean_abs_shap.toFixed(4)}</span>
                     </div>
-                    <span className="text-xs font-mono text-forge-steel/80">{f.mean_abs_shap.toFixed(4)}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-forge-steel/70">
+                  SHAP explanations unavailable for this run{shap.shap_error ? ` — ${shap.shap_error}` : ''}.
+                </p>
+              )}
             </div>
           )}
 

@@ -100,7 +100,14 @@ class StatisticalProfiler:
         return ColumnType.CATEGORICAL
 
     def _is_id_column(self, name: str, series: pd.Series) -> bool:
-        if re.search(r"\bid\b", name.lower()):
+        # Name-based: split on separators AND camelCase boundaries, then look for
+        # an explicit identifier token. Catches id, user_id, patient_id, userId,
+        # uuid — without false-matching substrings inside real words
+        # (grid, video, candidate, paid, width all tokenize without an "id" token).
+        tokens = set(
+            re.findall(r"[a-z0-9]+", re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", name).lower())
+        )
+        if tokens & {"id", "uid", "uuid", "guid"}:
             return True
         n = len(series)
         if n == 0 or series.nunique(dropna=True) != n:

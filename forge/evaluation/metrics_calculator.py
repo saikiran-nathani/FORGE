@@ -35,9 +35,10 @@ class MetricsCalculator:
         y_proba: np.ndarray | None,
         task_type: str,
         is_binary: bool = True,
+        n_features: int | None = None,
     ) -> dict[str, Any]:
         if task_type == "regression":
-            return self._regression_metrics(y_true, y_pred)
+            return self._regression_metrics(y_true, y_pred, n_features)
         return self._classification_metrics(y_true, y_pred, y_proba, is_binary)
 
     def _classification_metrics(
@@ -71,12 +72,16 @@ class MetricsCalculator:
             metrics["f1"] = float(f1_score(y_true, y_pred, average="binary", zero_division=0))
         return metrics
 
-    def _regression_metrics(self, y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, Any]:
+    def _regression_metrics(
+        self, y_true: np.ndarray, y_pred: np.ndarray, n_features: int | None = None
+    ) -> dict[str, Any]:
         rmse = float(np.sqrt(mean_squared_error(y_true, y_pred)))
         mae = float(mean_absolute_error(y_true, y_pred))
         r2 = float(r2_score(y_true, y_pred))
         n = len(y_true)
-        p = 1
+        # Adjusted R² must use the ACTUAL predictor count; hardcoding p=1 made it
+        # ≈ raw R² regardless of dimensionality (optimistic on wide/short data).
+        p = n_features if n_features else 1
         adj_r2 = 1 - (1 - r2) * (n - 1) / max(n - p - 1, 1)
         mape = float(mean_absolute_percentage_error(y_true, y_pred))
         return {

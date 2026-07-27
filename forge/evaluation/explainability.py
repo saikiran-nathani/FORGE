@@ -31,7 +31,19 @@ class ExplainabilityEngine:
 
         summary = self._shap_explain(model, sample, feature_names, model_name, output_dir)
         if summary.get("error"):
-            summary = {"model_name": model_name, "top_features": [], "n_samples_explained": len(sample)}
+            # Preserve the fact that SHAP FAILED — do not repackage as an empty
+            # success. The UI must distinguish "unavailable" from "ran, found
+            # nothing" (an empty top_features list is truthy in JS and rendered
+            # as a real, empty result otherwise).
+            summary = {
+                "model_name": model_name,
+                "top_features": [],
+                "n_samples_explained": len(sample),
+                "shap_status": "unavailable",
+                "shap_error": summary["error"],
+            }
+        else:
+            summary["shap_status"] = "ok"
 
         if enable_lime and task_type == "classification":
             summary["lime"] = self._lime_explain(model, sample, feature_names, task_type, output_dir)
@@ -39,7 +51,7 @@ class ExplainabilityEngine:
         if enable_pdp and y is not None:
             summary["pdp"] = self._pdp_explain(model, sample, feature_names, output_dir)
             summary["permutation_importance"] = self._permutation_importance(
-                model, sample, y.head(len(sample)), feature_names
+                model, sample, y.head(len(sample)), feature_names, task_type
             )
 
         with open(output_dir / "explainability.json", "w") as f:
@@ -60,12 +72,22 @@ class ExplainabilityEngine:
         if shap_values is None:
             return {"error": "Could not compute SHAP values"}
 
+        # Normalize SHAP output to a per-feature importance vector.
+        # SHAP returns one of: a LIST of per-class (n_samples, n_features) arrays
+        # (older API), a 2-D (n_samples, n_features) array, or a 3-D
+        # (n_samples, n_features, n_classes) array (modern multiclass + many
+        # binary tree models). Importance = mean |SHAP| over samples AND classes.
+        # BUG THIS REPLACES: the old code reduced axis 0 twice, collapsing the
+        # FEATURE axis for 3-D output → a length-n_classes vector mislabeled onto
+        # the first few feature names (the "two identical importances" in the demo).
         if isinstance(shap_values, list):
-            shap_values = shap_values[1] if len(shap_values) > 1 else shap_values[0]
-
-        mean_abs = np.abs(shap_values).mean(axis=0)
-        if mean_abs.ndim > 1:
-            mean_abs = mean_abs.mean(axis=0)
+            abs_arr = np.stack([np.abs(np.asarray(s)) for s in shap_values], axis=-1)
+        else:
+            abs_arr = np.abs(np.asarray(shap_values))
+        if abs_arr.ndim == 3:                       # (n_samples, n_features, n_classes)
+            mean_abs = abs_arr.mean(axis=(0, 2))
+        else:                                        # (n_samples, n_features)
+            mean_abs = abs_arr.mean(axis=0)
         mean_abs = np.asarray(mean_abs).flatten()
 
         importance = {
@@ -87,9 +109,15 @@ class ExplainabilityEngine:
             matplotlib.use("Agg")
             import matplotlib.pyplot as plt
 
+            # Beeswarm needs a 2-D (n_samples, n_features) slice; pick one class.
+            if isinstance(shap_values, list):
+                plot_shap = shap_values[1] if len(shap_values) > 1 else shap_values[0]
+            else:
+                arr = np.asarray(shap_values)
+                plot_shap = arr[:, :, -1] if arr.ndim == 3 else arr
             shap.summary_plot(
-                shap_values, sample,
-                feature_names=feature_names[: shap_values.shape[1]],
+                plot_shap, sample,
+                feature_names=feature_names[: plot_shap.shape[1]],
                 show=False, max_display=15,
             )
             plt.tight_layout()
@@ -165,11 +193,14 @@ class ExplainabilityEngine:
         X: pd.DataFrame,
         y: pd.Series,
         feature_names: list[str],
+        task_type: str = "classification",
     ) -> dict[str, float]:
         try:
             from sklearn.inspection import permutation_importance
 
-            scoring = "f1_macro" if len(np.unique(y)) <= 20 else "neg_mean_squared_error"
+            # Choose scoring from the actual task_type — NOT nunique(y), which
+            # misroutes a low-cardinality regression target to f1_macro (crash → {}).
+            scoring = "neg_mean_squared_error" if task_type == "regression" else "f1_macro"
             result = permutation_importance(model, X, y, n_repeats=5, random_state=42, n_jobs=1, scoring=scoring)
             return {
                 feature_names[i]: float(result.importances_mean[i])

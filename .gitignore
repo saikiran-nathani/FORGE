@@ -38,6 +38,7 @@ htmlcov/
 # Personal reference material & tooling — kept local, out of the product repo
 /production-ready-skill/
 /evaluation-deck/
+/AUDIT_FINDINGS.md
 
 # Secrets
 .env

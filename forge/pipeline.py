@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -122,19 +123,25 @@ class ForgePipeline:
 
         console.print("\n[bold]Stage 2:[/bold] Feature Engineering")
         self._progress("feature_engineering", "Engineering & selecting features…")
-        working_df = df
-        fe_result = None
-        if config.enable_llm:
+        # LLM-suggested transforms are ADVISORY: surfaced, but NOT fed to the model.
+        # Arbitrary/stateful generated code can't be safely replayed on a single
+        # prediction row, so the model trains on deterministic STATELESS features
+        # (log / datetime-part / interaction) added inside the feature pipeline and
+        # recreated identically at inference. (Previously the engineered df was
+        # passed here but silently dropped by the preprocessor — bug #28.)
+        advisory_features: list[dict[str, Any]] = []
+        if config.enable_llm and self.llm.available:
             engineer = LLMFeatureEngineer(
                 config.target_column, config.task_description, self.llm
             )
-            fe_result = engineer.engineer(df, profile, semantic)
-            working_df = fe_result.df
-            console.print(f"  LLM features: {len(fe_result.generated_features)} transformations")
-            self._progress("feature_engineering", f"Generated {len(fe_result.generated_features)} new features")
+            advisory_features = engineer.engineer(df, profile, semantic).generated_features
+            console.print(f"  LLM advisory suggestions: {len(advisory_features)}")
 
         fe = FeaturePipeline(config.target_column, config.random_state)
-        features = fe.fit_transform(working_df, profile, config.test_size)
+        features = fe.fit_transform(df, profile, config.test_size)
+        engineered_features = features.metadata.get("engineered_features", [])
+        console.print(f"  Engineered (stateless) features: {len(engineered_features)}")
+        self._progress("feature_engineering", f"Added {len(engineered_features)} stateless features")
         console.print(f"  Preprocessed features: {len(features.feature_names)}")
 
         selection_report: dict[str, Any] = {}
@@ -199,7 +206,9 @@ class ForgePipeline:
                 )
 
             if config.enable_ensembles and len(model_results) >= 3:
-                ensemble_builder = EnsembleBuilder(task_type, config.random_state)
+                ensemble_builder = EnsembleBuilder(
+                    task_type, profile.recommended_metric, config.random_state, config.cv_folds
+                )
                 for build_fn, label in [
                     (ensemble_builder.build_voting, "voting"),
                     (ensemble_builder.build_stacking, "stacking"),
@@ -213,9 +222,18 @@ class ForgePipeline:
                     except Exception as exc:
                         console.print(f"    [yellow]⚠ {label} ensemble failed — skipped ({str(exc).splitlines()[0][:80]})[/yellow]")
                         continue
+                    # Measure REAL inference latency — an ensemble wraps N base
+                    # models and is the slowest to predict, so a hardcoded 0.0 made
+                    # it always Pareto-optimal. Same protocol as the base models in
+                    # OptunaOptimizer: time 10 predicts on a 100-row sample.
+                    sample = features.X_train.head(min(100, len(features.X_train)))
+                    lat_start = time.perf_counter()
+                    for _ in range(10):
+                        model.predict(sample)
+                    latency_ms = (time.perf_counter() - lat_start) / 10 * 1000
                     model_results.append(ModelResult(
                         model_name=name, best_params={}, cv_score=cv_score,
-                        cv_score_std=0.0, training_time=0.0, inference_latency_ms=0.0,
+                        cv_score_std=0.0, training_time=0.0, inference_latency_ms=latency_ms,
                         fitted_model=model, metric_name=profile.recommended_metric,
                     ))
 
@@ -237,7 +255,8 @@ class ForgePipeline:
         is_binary = task_type == TaskType.BINARY_CLASSIFICATION
         task_str = "regression" if task_type == TaskType.REGRESSION else "classification"
         test_metrics = self.metrics_calc.compute(
-            features.y_test.values, y_pred, y_proba, task_str, is_binary
+            features.y_test.values, y_pred, y_proba, task_str, is_binary,
+            n_features=len(features.feature_names),
         )
         self._print_results(model_results, best, test_metrics)
 
@@ -273,7 +292,7 @@ class ForgePipeline:
             test_indices = features.X_test.index
             fairness_report = FairnessAuditor().audit(
                 df.loc[test_indices], features.y_test.values, y_pred, y_proba,
-                semantic, artifact_dir / "fairness",
+                semantic, artifact_dir / "fairness", task_type=task_type.value,
             )
             if fairness_report.get("flags"):
                 console.print(f"  Fairness flags: {len(fairness_report['flags'])}")
@@ -308,7 +327,7 @@ class ForgePipeline:
         }
         joblib.dump(bundle, artifact_dir / "best_model.joblib")
         self._save_artifacts(
-            artifact_dir, profile, semantic, test_metrics, fe_result,
+            artifact_dir, profile, semantic, test_metrics, engineered_features,
             selection_report, pareto,
         )
 
@@ -326,7 +345,7 @@ class ForgePipeline:
             pareto_frontier=pareto,
             best_model_name=best.model_name,
             best_metrics=test_metrics,
-            generated_features=fe_result.generated_features if fe_result else [],
+            generated_features=engineered_features,
             feature_selection=selection_report,
             shap_summary=shap_summary,
             error_analysis=error_analysis,
@@ -397,11 +416,21 @@ class ForgePipeline:
         if mino is not None and mino < 0.2:
             warnings.append(f"Imbalanced target ({mino:.0%} minority): prefer balanced accuracy / MCC / minority recall over accuracy.")
         gap = ctx.get("cv_test_gap")
-        if gap is not None and abs(gap) > 0.15:
-            warnings.append(
-                f"Large CV→test gap on {ctx.get('selection_metric')} "
-                f"({ctx.get('cv_best_score'):.3f}→{ctx.get('test_metric_value'):.3f}): possible overfitting or split variance."
-            )
+        if gap is not None:
+            metric = ctx.get("selection_metric", "")
+            cv_val = ctx.get("cv_best_score")
+            # RMSE/MAE/MAPE are unbounded & scale-dependent — a fixed 0.15 absolute
+            # threshold always/never fires. Use a RELATIVE gap for those; the 0.15
+            # absolute threshold only makes sense for [0,1]-bounded metrics.
+            if metric in ("rmse", "mae", "mape") and cv_val:
+                tripped = abs(gap) / max(abs(cv_val), 1e-9) > 0.15
+            else:
+                tripped = abs(gap) > 0.15
+            if tripped:
+                warnings.append(
+                    f"Large CV→test gap on {metric} "
+                    f"({ctx.get('cv_best_score'):.3f}→{ctx.get('test_metric_value'):.3f}): possible overfitting or split variance."
+                )
         if isinstance(baseline_metrics, dict) and "error" not in baseline_metrics:
             if task_type == TaskType.REGRESSION:
                 bm, base = test_metrics.get("rmse"), baseline_metrics.get("rmse")
@@ -433,7 +462,7 @@ class ForgePipeline:
             registry = [m for m in registry if m not in (RidgeModel, LassoModel, ElasticNetModel)]
         return registry
 
-    def _save_artifacts(self, artifact_dir, profile, semantic, metrics, fe_result, selection, pareto):
+    def _save_artifacts(self, artifact_dir, profile, semantic, metrics, engineered_features, selection, pareto):
         with open(artifact_dir / "profile.json", "w") as f:
             json.dump(profile.to_dict(), f, indent=2)
         with open(artifact_dir / "semantic_profile.json", "w") as f:
@@ -442,9 +471,9 @@ class ForgePipeline:
             json.dump(metrics, f, indent=2)
         with open(artifact_dir / "pareto_frontier.json", "w") as f:
             json.dump(pareto, f, indent=2)
-        if fe_result:
-            with open(artifact_dir / "llm_features.json", "w") as f:
-                json.dump(fe_result.generated_features, f, indent=2)
+        if engineered_features:
+            with open(artifact_dir / "engineered_features.json", "w") as f:
+                json.dump(engineered_features, f, indent=2)
         if selection:
             with open(artifact_dir / "feature_selection.json", "w") as f:
                 json.dump(selection, f, indent=2)

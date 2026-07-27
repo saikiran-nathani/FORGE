@@ -9,16 +9,24 @@ from sklearn.ensemble import StackingClassifier, StackingRegressor, VotingClassi
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.model_selection import KFold, StratifiedKFold, cross_val_score
 
-from forge.training.hpo.optuna_optimizer import ModelResult
+from forge.training.hpo.optuna_optimizer import ModelResult, sklearn_scoring
 from forge.training.task_router import TaskRouter, TaskType
 
 
 class EnsembleBuilder:
     """Creates voting and stacking ensembles from top HPO results."""
 
-    def __init__(self, task_type: TaskType, random_state: int = 42):
+    def __init__(
+        self,
+        task_type: TaskType,
+        metric_name: str,
+        random_state: int = 42,
+        cv_folds: int = 5,
+    ):
         self.task_type = task_type
+        self.metric_name = metric_name
         self.random_state = random_state
+        self.cv_folds = cv_folds
         self.router = TaskRouter()
 
     def build_voting(
@@ -68,11 +76,14 @@ class EnsembleBuilder:
         return model, "stacking_ensemble", cv_score
 
     def _cv_score(self, model: Any, X: pd.DataFrame, y: pd.Series) -> float:
-        scoring = "f1_macro" if self.router.is_classification(self.task_type) else "neg_root_mean_squared_error"
+        # Same metric AND fold count as the base models (OptunaOptimizer), so the
+        # leaderboard/Pareto/_pick_best compare like with like instead of stamping
+        # an f1_macro number with the run's roc_auc label.
+        scoring = sklearn_scoring(self.metric_name)
         if self.router.is_classification(self.task_type):
-            cv = StratifiedKFold(3, shuffle=True, random_state=self.random_state)
+            cv = StratifiedKFold(self.cv_folds, shuffle=True, random_state=self.random_state)
         else:
-            cv = KFold(3, shuffle=True, random_state=self.random_state)
+            cv = KFold(self.cv_folds, shuffle=True, random_state=self.random_state)
         scores = cross_val_score(model, X, y, cv=cv, scoring=scoring, n_jobs=1)
         mean = float(scores.mean())
         return -mean if scoring == "neg_root_mean_squared_error" else mean

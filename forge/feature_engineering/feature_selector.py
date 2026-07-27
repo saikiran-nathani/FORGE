@@ -143,9 +143,18 @@ class FeatureSelector:
             model.fit(X[features], y)
             explainer = shap.TreeExplainer(model)
             shap_values = explainer.shap_values(X[features])
+            # Aggregate |SHAP| over samples AND classes. The old code took only
+            # class-1 (list) or produced a 2-D array (3-D input) that broke the
+            # zip → bare except → silent {} for multiclass.
             if isinstance(shap_values, list):
-                shap_values = shap_values[1] if len(shap_values) > 1 else shap_values[0]
-            mean_abs = np.abs(shap_values).mean(axis=0)
+                abs_arr = np.stack([np.abs(np.asarray(s)) for s in shap_values], axis=-1)
+            else:
+                abs_arr = np.abs(np.asarray(shap_values))
+            if abs_arr.ndim == 3:
+                mean_abs = abs_arr.mean(axis=(0, 2))
+            else:
+                mean_abs = abs_arr.mean(axis=0)
+            mean_abs = np.asarray(mean_abs).flatten()
             return {f: float(v) for f, v in zip(features, mean_abs)}
         except Exception:
             return {}
@@ -171,7 +180,16 @@ class FeatureSelector:
                 estimator,
                 step=max(1, len(features) // 10),
                 cv=cv,
-                scoring="f1" if self.task_type != TaskType.REGRESSION else "neg_root_mean_squared_error",
+                # "f1" is binary-only and RAISES on multiclass — which the broad
+                # except below then swallowed, silently skipping RFE for every
+                # multiclass run. f1_macro works for multiclass.
+                scoring=(
+                    "neg_root_mean_squared_error"
+                    if self.task_type == TaskType.REGRESSION
+                    else "f1"
+                    if self.task_type == TaskType.BINARY_CLASSIFICATION
+                    else "f1_macro"
+                ),
                 n_jobs=1,
             )
             selector.fit(X[features], y)

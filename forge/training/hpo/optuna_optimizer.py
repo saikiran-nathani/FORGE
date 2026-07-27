@@ -14,6 +14,24 @@ from sklearn.model_selection import KFold, StratifiedKFold, cross_val_score
 from forge.training.base_model import BaseModel
 from forge.training.task_router import TaskRouter, TaskType
 
+_SCORING_MAP = {
+    "accuracy": "accuracy",
+    "f1": "f1",
+    "f1_macro": "f1_macro",
+    "roc_auc": "roc_auc",
+    "rmse": "neg_root_mean_squared_error",
+}
+
+
+def sklearn_scoring(metric_name: str) -> str:
+    """Map a FORGE metric name to an sklearn scoring string.
+
+    Shared by OptunaOptimizer and EnsembleBuilder so base-model and ensemble
+    CV scores are always the SAME metric (otherwise the leaderboard compares,
+    e.g., an ensemble's f1_macro against base models' roc_auc).
+    """
+    return _SCORING_MAP.get(metric_name, "accuracy")
+
 
 @dataclass
 class ModelResult:
@@ -62,7 +80,11 @@ class OptunaOptimizer:
             return float(scores.mean())
 
         study = optuna.create_study(
-            direction="maximize" if scoring != "neg_root_mean_squared_error" else "minimize",
+            # Every sklearn scorer used here follows "higher is better" — including
+            # neg_root_mean_squared_error, where less-negative means lower RMSE.
+            # So we always maximize. (Previously this minimized neg-RMSE, which
+            # selected the WORST hyperparameters on every regression run.)
+            direction="maximize",
             sampler=optuna.samplers.TPESampler(seed=self.random_state),
             pruner=optuna.pruners.MedianPruner(n_startup_trials=5, n_warmup_steps=2),
         )
@@ -106,14 +128,7 @@ class OptunaOptimizer:
         return KFold(n_splits=self.cv_folds, shuffle=True, random_state=self.random_state)
 
     def _sklearn_scoring(self) -> str:
-        mapping = {
-            "accuracy": "accuracy",
-            "f1": "f1",
-            "f1_macro": "f1_macro",
-            "roc_auc": "roc_auc",
-            "rmse": "neg_root_mean_squared_error",
-        }
-        return mapping.get(self.metric_name, "accuracy")
+        return sklearn_scoring(self.metric_name)
 
 
 class _FixedTrial:

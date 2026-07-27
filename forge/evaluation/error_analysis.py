@@ -49,16 +49,22 @@ class ErrorAnalyzer:
         feature_names: list[str],
         top_n: int = 20,
     ) -> list[dict[str, Any]]:
-        if y_proba is not None and y_proba.ndim > 1:
-            proba = y_proba[:, 1] if y_proba.shape[1] == 2 else y_proba.max(axis=1)
-        else:
-            proba = None
+        # Confidence (max class prob) for display; correct per-sample cross-entropy
+        # for RANKING. The old code used a binary p = proba if y==1 else 1-proba,
+        # which is meaningless for multiclass. -log P(true class) is correct for both.
+        confidence = None
+        if y_proba is not None:
+            confidence = y_proba.max(axis=1) if y_proba.ndim > 1 else y_proba
 
         losses = []
         for i in range(len(y_true)):
-            if proba is not None:
-                p = proba[i] if y_true[i] == 1 else 1 - proba[i]
-                loss = -np.log(max(p, 1e-8))
+            if y_proba is not None and y_proba.ndim > 1:
+                c = int(y_true[i])
+                p = y_proba[i, c] if 0 <= c < y_proba.shape[1] else 1e-8
+                loss = -np.log(max(float(p), 1e-8))
+            elif y_proba is not None:
+                p = y_proba[i] if y_true[i] == 1 else 1 - y_proba[i]
+                loss = -np.log(max(float(p), 1e-8))
             else:
                 loss = float(y_true[i] != y_pred[i])
             losses.append(loss)
@@ -74,8 +80,8 @@ class ErrorAnalyzer:
                 "loss": float(losses[idx]),
                 "top_features": dict(list(row.items())[:8]),
             }
-            if proba is not None:
-                record["probability"] = float(proba[idx])
+            if confidence is not None:
+                record["probability"] = float(confidence[idx])
             records.append(record)
         return records
 

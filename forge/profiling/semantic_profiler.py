@@ -107,7 +107,11 @@ Return JSON: {{"columns": {{"col_name": {{...}}}}, "data_quality_summary": "..."
 
         for name, col_profile in report.column_profiles.items():
             lower = name.lower()
-            sensitive = any(kw in lower for kw in SENSITIVE_KEYWORDS)
+            # Token match (split on separators + camelCase), not substring:
+            # otherwise "age" flags usage/mileage/average/page_views as sensitive
+            # and the fairness auditor fabricates concerns about non-protected cols.
+            tokens = set(re.findall(r"[a-z0-9]+", re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", name).lower()))
+            sensitive = bool(tokens & SENSITIVE_KEYWORDS)
             importance = "MEDIUM"
             if any(kw in lower for kw in IMPORTANCE_HINTS["high"]):
                 importance = "HIGH"

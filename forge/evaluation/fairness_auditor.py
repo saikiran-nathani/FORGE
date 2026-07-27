@@ -25,6 +25,7 @@ class FairnessAuditor:
         y_proba: np.ndarray | None,
         semantic: SemanticProfile,
         output_dir: Path,
+        task_type: str = "binary_classification",
     ) -> dict[str, Any]:
         sensitive_cols = [
             col for col, info in semantic.columns.items()
@@ -38,9 +39,9 @@ class FairnessAuditor:
         flags: list[str] = []
 
         for col in sensitive_cols:
-            col_metrics = self._compute_group_metrics(df[col], y_true, y_pred, y_proba)
+            col_metrics = self._compute_group_metrics(df[col], y_true, y_pred, y_proba, task_type)
             metrics[col] = col_metrics
-            flags.extend(self._check_fairness(col, col_metrics))
+            flags.extend(self._check_fairness(col, col_metrics, task_type))
 
         result = {"sensitive_columns": sensitive_cols, "metrics": metrics, "flags": flags}
         with open(output_dir / "fairness_report.json", "w") as f:
@@ -53,7 +54,13 @@ class FairnessAuditor:
         y_true: np.ndarray,
         y_pred: np.ndarray,
         y_proba: np.ndarray | None,
+        task_type: str,
     ) -> dict[str, Any]:
+        # Binary 0/1 accuracy and positive-rate/disparate-impact only make sense
+        # for binary classification. Regression uses per-group error (MAE);
+        # multiclass uses per-group accuracy only (no "positive" class to rate).
+        is_regression = task_type == "regression"
+        is_binary = task_type == "binary_classification"
         group_stats: dict[str, Any] = {}
         unique_groups = groups.dropna().unique()
 
@@ -61,26 +68,42 @@ class FairnessAuditor:
             mask = (groups == g).values
             if mask.sum() < 5:
                 continue
-            acc = float((y_true[mask] == y_pred[mask]).mean())
-            pos_rate = float(y_pred[mask].mean())
-            stat: dict[str, Any] = {"count": int(mask.sum()), "accuracy": acc, "positive_rate": pos_rate}
-            if y_proba is not None:
-                proba = y_proba[mask][:, 1] if y_proba.ndim > 1 else y_proba[mask]
-                stat["mean_predicted_proba"] = float(np.mean(proba))
+            stat: dict[str, Any] = {"count": int(mask.sum())}
+            if is_regression:
+                stat["mae"] = float(np.abs(y_true[mask] - y_pred[mask]).mean())
+                stat["mean_prediction"] = float(np.mean(y_pred[mask]))
+            else:
+                stat["accuracy"] = float((y_true[mask] == y_pred[mask]).mean())
+                if is_binary:
+                    # positive class after label encoding is 1
+                    stat["positive_rate"] = float((y_pred[mask] == 1).mean())
+                    if y_proba is not None:
+                        proba = y_proba[mask][:, 1] if y_proba.ndim > 1 else y_proba[mask]
+                        stat["mean_predicted_proba"] = float(np.mean(proba))
             group_stats[str(g)] = stat
 
-        if len(group_stats) >= 2:
-            rates = [v["positive_rate"] for v in group_stats.values()]
-            group_stats["disparate_impact_ratio"] = float(min(rates) / max(rates)) if max(rates) > 0 else 1.0
+        # Disparate impact requires a binary positive rate.
+        if is_binary:
+            rates = [v["positive_rate"] for v in group_stats.values() if "positive_rate" in v]
+            if len(rates) >= 2:
+                group_stats["disparate_impact_ratio"] = (
+                    float(min(rates) / max(rates)) if max(rates) > 0 else 1.0
+                )
         return group_stats
 
-    def _check_fairness(self, col: str, metrics: dict[str, Any]) -> list[str]:
+    def _check_fairness(self, col: str, metrics: dict[str, Any], task_type: str) -> list[str]:
         flags = []
         di = metrics.get("disparate_impact_ratio")
         if di is not None and not (self.DISPARATE_IMPACT_RANGE[0] <= di <= self.DISPARATE_IMPACT_RANGE[1]):
             flags.append(f"Disparate impact out of range for '{col}': {di:.3f}")
 
-        accs = [v["accuracy"] for k, v in metrics.items() if isinstance(v, dict) and "accuracy" in v]
-        if accs and max(accs) - min(accs) > 0.1:
-            flags.append(f"Accuracy gap > 10% across groups in '{col}'")
+        group_vals = [v for v in metrics.values() if isinstance(v, dict)]
+        if task_type == "regression":
+            maes = [v["mae"] for v in group_vals if "mae" in v]
+            if len(maes) >= 2 and min(maes) > 0 and max(maes) / min(maes) > 1.5:
+                flags.append(f"Error (MAE) gap > 1.5x across groups in '{col}'")
+        else:
+            accs = [v["accuracy"] for v in group_vals if "accuracy" in v]
+            if accs and max(accs) - min(accs) > 0.1:
+                flags.append(f"Accuracy gap > 10% across groups in '{col}'")
         return flags

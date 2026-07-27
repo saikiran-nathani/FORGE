@@ -42,6 +42,8 @@ class FeaturePipeline:
         test_size: float = 0.2,
     ) -> FeaturePipelineResult:
         df = df.dropna(subset=[self.target_column]).copy()
+        df, engineered = self._apply_stateless_engineering(df, profile)
+        engineered_names = [c for r in engineered for c in r["new_columns"]]
         feature_cols = [c for c in df.columns if c != self.target_column]
         id_cols = [
             c for c in feature_cols
@@ -73,6 +75,12 @@ class FeaturePipeline:
         numerical_cols = [
             c for c in feature_cols
             if profile.column_types.get(c) in (ColumnType.NUMERICAL, ColumnType.DATETIME)
+        ]
+        # Stateless engineered features are all numeric — route them into the
+        # preprocessor explicitly (they aren't in profile.column_types, so
+        # remainder="drop" would otherwise silently discard them: bug #28).
+        numerical_cols += [
+            c for c in engineered_names if c in feature_cols and c not in numerical_cols
         ]
         categorical_cols = [
             c for c in feature_cols
@@ -130,7 +138,10 @@ class FeaturePipeline:
                 "numerical_cols": numerical_cols,
                 "categorical_cols": categorical_cols,
                 "dropped_id_cols": id_cols,
-                "input_columns": feature_cols,
+                # Original input schema only — engineered cols are recreated at
+                # inference from these, so they must NOT be listed as required inputs.
+                "input_columns": [c for c in feature_cols if c not in engineered_names],
+                "engineered_features": engineered,
                 "clip_bounds": clip_bounds,
             },
         )
@@ -160,6 +171,9 @@ class FeaturePipeline:
 
         cols = [c for c in meta["input_columns"] if c in df.columns]
         X = df[cols].copy()
+        # Recreate the SAME stateless engineered features the model was trained on
+        # (deterministic from the raw row + persisted profile — no fitted state).
+        X, _ = self._apply_stateless_engineering(X, profile)
         X = self._handle_missing_indicators(X, profile)
         X = self._apply_clip_bounds(X, meta.get("clip_bounds", {}))
         for col in meta.get("categorical_cols", []):
@@ -177,6 +191,47 @@ class FeaturePipeline:
         if selected:
             result = result[[c for c in selected if c in result.columns]]
         return result
+
+    def _apply_stateless_engineering(
+        self, df: pd.DataFrame, profile: ProfileReport
+    ) -> tuple[pd.DataFrame, list[dict[str, Any]]]:
+        """Add STATELESS engineered features (each row depends only on itself).
+
+        Statelessness is the whole point: because no cross-row statistic is used,
+        (a) computing pre- vs post-split gives identical values → no train/test
+        leakage, and (b) a single-row prediction reproduces the exact same value →
+        no train/serve skew, so these can be replayed verbatim at inference.
+        Only log / datetime-part / interaction transforms qualify. z-score
+        (redundant with the StandardScaler) and rank / frequency-encode (need
+        fitted train statistics) are intentionally excluded.
+        """
+        df = df.copy()
+        records: list[dict[str, Any]] = []
+        feature_cols = [c for c in df.columns if c != self.target_column]
+        numeric = [
+            c for c in feature_cols if profile.column_types.get(c) == ColumnType.NUMERICAL
+        ]
+        datetime_cols = [
+            c for c in feature_cols if profile.column_types.get(c) == ColumnType.DATETIME
+        ]
+        for col in numeric:
+            name = f"{col}_log"
+            df[name] = np.log1p(df[col].clip(lower=0))
+            records.append({"source_column": col, "new_columns": [name]})
+        for col in datetime_cols:
+            dt = pd.to_datetime(df[col], errors="coerce")
+            cols = [f"{col}_dayofweek", f"{col}_month", f"{col}_is_weekend"]
+            df[cols[0]] = dt.dt.dayofweek
+            df[cols[1]] = dt.dt.month
+            df[cols[2]] = dt.dt.dayofweek.isin([5, 6]).astype(int)
+            records.append({"source_column": col, "new_columns": cols})
+        if len(numeric) >= 2:
+            c1, c2 = numeric[0], numeric[1]
+            cols = [f"{c1}_x_{c2}", f"{c1}_ratio_{c2}"]
+            df[cols[0]] = df[c1] * df[c2]
+            df[cols[1]] = df[c1] / (df[c2].replace(0, np.nan) + 1e-8)
+            records.append({"source_column": f"{c1},{c2}", "new_columns": cols})
+        return df, records
 
     def _apply_clip_bounds(self, df: pd.DataFrame, bounds: dict[str, dict[str, float]]) -> pd.DataFrame:
         df = df.copy()
@@ -207,10 +262,15 @@ class FeaturePipeline:
         bounds: dict[str, dict[str, float]] = {}
         for col in numerical_cols:
             rec = profile.outlier_analysis.get("per_column", {}).get(col, {})
+            # Only record bounds for columns we ACTUALLY clip at train time.
+            # _apply_clip_bounds (test split + every inference request) clips every
+            # column present in `bounds`, so storing bounds for un-clipped columns
+            # caused train/serve skew: trained unclipped, served clipped.
+            if rec.get("recommendation") != "clip":
+                continue
             p01, p99 = ref[col].quantile([0.01, 0.99])
             bounds[col] = {"low": float(p01), "high": float(p99)}
-            if rec.get("recommendation") == "clip":
-                df[col] = df[col].clip(p01, p99)
+            df[col] = df[col].clip(p01, p99)
         if return_bounds:
             return df, bounds
         return df
