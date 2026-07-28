@@ -1,9 +1,9 @@
-# Model Card: voting_ensemble
+# Model Card: lightgbm
 
-**Generated:** 2026-07-10 22:37 UTC
+**Generated:** 2026-07-28 16:23 UTC
 
 ## Model Details
-- **Model:** voting_ensemble
+- **Model:** lightgbm
 - **Target:** `churned`
 - **Task:** Predict which customers will churn
 - **Type:** classification
@@ -14,24 +14,24 @@
 - **Quality Score:** 93.5/100
 
 ## Performance Metrics
-- **accuracy:** 0.9375
-- **balanced_accuracy:** 0.9193
-- **f1_macro:** 0.9193
-- **f1_weighted:** 0.9375
-- **precision_macro:** 0.9193
-- **recall_macro:** 0.9193
-- **mcc:** 0.8386
-- **cohen_kappa:** 0.8386
-- **roc_auc:** 0.9766
-- **pr_auc:** 0.9579
-- **brier_score:** 0.0430
-- **log_loss:** 0.1568
-- **ece:** 0.0365
-- **f1:** 0.8810
+- **accuracy:** 0.9469
+- **balanced_accuracy:** 0.9295
+- **f1_macro:** 0.9311
+- **f1_weighted:** 0.9468
+- **precision_macro:** 0.9328
+- **recall_macro:** 0.9295
+- **mcc:** 0.8623
+- **cohen_kappa:** 0.8623
+- **roc_auc:** 0.9746
+- **pr_auc:** 0.9571
+- **brier_score:** 0.0409
+- **log_loss:** 0.1535
+- **ece:** 0.0198
+- **f1:** 0.8982
 
 ## Features
 - **Input columns:** 8
-- **Engineered features:** 3
+- **Engineered features:** 6
 
 ## Fairness Assessment
 No fairness issues flagged.

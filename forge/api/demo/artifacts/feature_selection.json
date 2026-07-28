@@ -1,10 +1,21 @@
 {
   "selected": [
     "tenure_months",
-    "monthly_charges",
-    "logins_last_30d"
+    "logins_last_30d",
+    "tenure_months_log",
+    "monthly_charges_log",
+    "tenure_months_x_monthly_charges",
+    "tenure_months_ratio_monthly_charges"
   ],
   "removed": [
+    {
+      "feature": "monthly_charges",
+      "reason": "correlated_with_monthly_charges_log"
+    },
+    {
+      "feature": "discount_pct",
+      "reason": "correlated_with_discount_pct_log"
+    },
     {
       "feature": "total_charges",
       "reason": "low_mutual_information"
@@ -14,11 +25,23 @@
       "reason": "low_mutual_information"
     },
     {
-      "feature": "discount_pct",
+      "feature": "account_age_days",
       "reason": "low_mutual_information"
     },
     {
-      "feature": "account_age_days",
+      "feature": "total_charges_log",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "avg_session_minutes_log",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "discount_pct_log",
+      "reason": "low_mutual_information"
+    },
+    {
+      "feature": "account_age_days_log",
       "reason": "low_mutual_information"
     },
     {
@@ -34,6 +57,10 @@
       "reason": "low_mutual_information"
     },
     {
+      "feature": "num_support_tickets_12",
+      "reason": "low_mutual_information"
+    },
+    {
       "feature": "num_support_tickets_14",
       "reason": "low_mutual_information"
     },
@@ -43,14 +70,6 @@
     },
     {
       "feature": "num_support_tickets_2",
-      "reason": "low_mutual_information"
-    },
-    {
-      "feature": "num_support_tickets_3",
-      "reason": "low_mutual_information"
-    },
-    {
-      "feature": "num_support_tickets_4",
       "reason": "low_mutual_information"
     },
     {
@@ -74,19 +93,32 @@
       "reason": "low_mutual_information"
     },
     {
-      "feature": "num_support_tickets_12",
+      "feature": "logins_last_30d_log",
       "reason": "low_shap_importance"
     },
     {
       "feature": "num_support_tickets_13",
       "reason": "low_shap_importance"
+    },
+    {
+      "feature": "num_support_tickets_3",
+      "reason": "low_shap_importance"
+    },
+    {
+      "feature": "num_support_tickets_4",
+      "reason": "low_shap_importance"
     }
   ],
   "importance": {
-    "tenure_months": 0.9892605609372411,
-    "monthly_charges": 0.7420569092347579,
-    "logins_last_30d": 2.4060840556615846,
-    "num_support_tickets_12": 0.006042559984895267,
-    "num_support_tickets_13": 0.0
+    "tenure_months": 0.36359306775904465,
+    "logins_last_30d": 2.3498047868024745,
+    "tenure_months_log": 0.060894711832745606,
+    "monthly_charges_log": 0.6534942552730604,
+    "logins_last_30d_log": 0.009803432982923861,
+    "tenure_months_x_monthly_charges": 0.6971241824649186,
+    "tenure_months_ratio_monthly_charges": 0.38233785567512524,
+    "num_support_tickets_13": 0.0,
+    "num_support_tickets_3": 0.0,
+    "num_support_tickets_4": 0.0
   }
 }

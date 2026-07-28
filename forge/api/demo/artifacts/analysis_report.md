@@ -1,28 +1,31 @@
 # FORGE Analysis Report
 
 ## Executive Summary
-The pipeline trained **voting_ensemble** for task: _Predict which customers will churn_.
+The pipeline trained **lightgbm** for task: _Predict which customers will churn_.
 Primary metrics indicate strong performance.
 
 ## Model Metrics
-- accuracy: 0.9375
-- balanced_accuracy: 0.9193
-- f1_macro: 0.9193
-- f1_weighted: 0.9375
-- precision_macro: 0.9193
-- recall_macro: 0.9193
-- mcc: 0.8386
-- cohen_kappa: 0.8386
-- roc_auc: 0.9766
-- pr_auc: 0.9579
-- brier_score: 0.0430
-- log_loss: 0.1568
-- ece: 0.0365
-- f1: 0.8810
+- accuracy: 0.9469
+- balanced_accuracy: 0.9295
+- f1_macro: 0.9311
+- f1_weighted: 0.9468
+- precision_macro: 0.9328
+- recall_macro: 0.9295
+- mcc: 0.8623
+- cohen_kappa: 0.8623
+- roc_auc: 0.9746
+- pr_auc: 0.9571
+- brier_score: 0.0409
+- log_loss: 0.1535
+- ece: 0.0198
+- f1: 0.8982
 
 ## Key Feature Insights
-- **tenure_months** (SHAP: 0.1294)
-- **monthly_charges** (SHAP: 0.1294)
+- **logins_last_30d** (SHAP: 1.9848)
+- **tenure_months_x_monthly_charges** (SHAP: 1.0624)
+- **monthly_charges_log** (SHAP: 0.6808)
+- **tenure_months_ratio_monthly_charges** (SHAP: 0.6368)
+- **tenure_months** (SHAP: 0.2110)
 
 ## Error Patterns
 - No significant underperforming slices detected

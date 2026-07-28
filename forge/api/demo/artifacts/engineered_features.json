@@ -1,0 +1,51 @@
+[
+  {
+    "source_column": "tenure_months",
+    "new_columns": [
+      "tenure_months_log"
+    ]
+  },
+  {
+    "source_column": "monthly_charges",
+    "new_columns": [
+      "monthly_charges_log"
+    ]
+  },
+  {
+    "source_column": "total_charges",
+    "new_columns": [
+      "total_charges_log"
+    ]
+  },
+  {
+    "source_column": "avg_session_minutes",
+    "new_columns": [
+      "avg_session_minutes_log"
+    ]
+  },
+  {
+    "source_column": "logins_last_30d",
+    "new_columns": [
+      "logins_last_30d_log"
+    ]
+  },
+  {
+    "source_column": "discount_pct",
+    "new_columns": [
+      "discount_pct_log"
+    ]
+  },
+  {
+    "source_column": "account_age_days",
+    "new_columns": [
+      "account_age_days_log"
+    ]
+  },
+  {
+    "source_column": "tenure_months,monthly_charges",
+    "new_columns": [
+      "tenure_months_x_monthly_charges",
+      "tenure_months_ratio_monthly_charges"
+    ]
+  }
+]

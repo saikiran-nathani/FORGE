@@ -3,15 +3,27 @@
   "explanations": [
     {
       "feature": "logins_last_30d > 0.70",
-      "weight": 0.47315087620026436
+      "weight": 0.4730207586910686
+    },
+    {
+      "feature": "tenure_months_x_monthly_charges > 0.27",
+      "weight": 0.1748276768155667
+    },
+    {
+      "feature": "tenure_months_ratio_monthly_charges > 0.16",
+      "weight": 0.14270941950349472
+    },
+    {
+      "feature": "0.32 < monthly_charges_log <= 0.77",
+      "weight": -0.08034126428233881
     },
     {
       "feature": "tenure_months > 0.38",
-      "weight": 0.2703432668716724
+      "weight": 0.018699427334699252
     },
     {
-      "feature": "0.23 < monthly_charges <= 0.78",
-      "weight": -0.01618090687690676
+      "feature": "tenure_months_log > 0.49",
+      "weight": -0.009173269084103056
     }
   ]
 }

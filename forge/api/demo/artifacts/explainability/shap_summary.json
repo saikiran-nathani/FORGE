@@ -1,13 +1,29 @@
 {
-  "model_name": "voting_ensemble",
+  "model_name": "lightgbm",
   "top_features": [
     {
-      "feature": "tenure_months",
-      "mean_abs_shap": 0.12941863703915793
+      "feature": "logins_last_30d",
+      "mean_abs_shap": 1.984787054144241
     },
     {
-      "feature": "monthly_charges",
-      "mean_abs_shap": 0.12941863703915793
+      "feature": "tenure_months_x_monthly_charges",
+      "mean_abs_shap": 1.062406991139311
+    },
+    {
+      "feature": "monthly_charges_log",
+      "mean_abs_shap": 0.6808374924388023
+    },
+    {
+      "feature": "tenure_months_ratio_monthly_charges",
+      "mean_abs_shap": 0.6367929686844909
+    },
+    {
+      "feature": "tenure_months",
+      "mean_abs_shap": 0.21097641998683095
+    },
+    {
+      "feature": "tenure_months_log",
+      "mean_abs_shap": 0.0528303709749326
     }
   ],
   "n_samples_explained": 200
