@@ -29,6 +29,11 @@ class ModelCardGenerator:
         bundle = joblib.load(artifact_dir / "best_model.joblib")
         model_name = bundle.get("model_name", "unknown")
 
+        # Format row count defensively: "{x:,}" on the "N/A" string default raises
+        # ValueError, turning /deploy into a cryptic 500.
+        n_rows = profile.get("n_rows")
+        rows_str = f"{n_rows:,}" if isinstance(n_rows, int) else "N/A"
+
         limitations = []
         if errors.get("underperforming_slices") or errors.get("slice_analysis", {}).get("underperforming_slices"):
             limitations.append("Model underperforms on certain data slices — see error analysis")
@@ -46,7 +51,7 @@ class ModelCardGenerator:
 - **Type:** {profile.get("target_analysis", {}).get("task_type", "unknown")}
 
 ## Training Data
-- **Rows:** {profile.get("n_rows", "N/A"):,}
+- **Rows:** {rows_str}
 - **Columns:** {profile.get("n_cols", "N/A")}
 - **Quality Score:** {profile.get("quality_score", "N/A")}/100
 

@@ -118,12 +118,18 @@ class FeatureSelector:
         else:
             mi = mutual_info_classif(X[features], y, random_state=self.random_state)
 
-        kept = []
-        for f, score in zip(features, mi):
-            if score >= self.mi_threshold:
-                kept.append(f)
-            else:
-                removed.append({"feature": f, "reason": "low_mutual_information"})
+        kept = [f for f, score in zip(features, mi) if score >= self.mi_threshold]
+        if not kept:
+            # All features scored below the threshold — keep the top-k by MI rather
+            # than returning zero features (which crashes training on an empty X).
+            k = min(10, len(features))
+            top_idx = set(np.argsort(mi)[::-1][:k])
+            kept = [f for i, f in enumerate(features) if i in top_idx]
+        kept_set = set(kept)
+        removed = [
+            {"feature": f, "reason": "low_mutual_information"}
+            for f in features if f not in kept_set
+        ]
         return kept, removed
 
     def _shap_importance(

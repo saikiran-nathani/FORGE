@@ -10,6 +10,7 @@ from typing import Any
 
 import joblib
 import mlflow
+import numpy as np
 import pandas as pd
 from rich.console import Console
 from rich.table import Table
@@ -249,7 +250,9 @@ class ForgePipeline:
 
         console.print("\n[bold]Stage 4:[/bold] Evaluation + Explainability")
         self._progress("evaluation", f"Evaluating best model: {best.model_name}…")
-        y_pred = best.fitted_model.predict(features.X_test)
+        # CatBoost returns a 2-D (n, 1) array for classification; ravel so every
+        # downstream consumer (metrics, error analysis, fairness) gets 1-D preds.
+        y_pred = np.asarray(best.fitted_model.predict(features.X_test)).ravel()
         y_proba = getattr(best.fitted_model, "predict_proba", lambda x: None)(features.X_test)
 
         is_binary = task_type == TaskType.BINARY_CLASSIFICATION
@@ -437,6 +440,11 @@ class ForgePipeline:
                 if bm is not None and base is not None and bm >= base:
                     warnings.append(f"Model RMSE ({bm:.3f}) does not beat the mean-prediction baseline ({base:.3f}).")
             else:
+                # roc_auc can sit at ~0.5 (no signal) while accuracy matches the
+                # majority baseline — check it explicitly, not just accuracy.
+                ra, base_ra = test_metrics.get("roc_auc"), baseline_metrics.get("roc_auc")
+                if ra is not None and base_ra is not None and ra <= base_ra + 0.02:
+                    warnings.append(f"Model ROC-AUC ({ra:.3f}) barely exceeds the {base_ra:.3f} baseline — little discriminative signal.")
                 for m in ("balanced_accuracy", "accuracy"):
                     bm, base = test_metrics.get(m), baseline_metrics.get(m)
                     if bm is not None and base is not None and bm < base:

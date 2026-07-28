@@ -43,10 +43,19 @@ class ModelServer:
     def predict(self, features: dict[str, Any] | list[dict[str, Any]]) -> dict[str, Any] | list[dict[str, Any]]:
         single = isinstance(features, dict)
         rows = [features] if single else features
+        # Clear, actionable errors instead of a cryptic downstream failure.
+        if not rows or not any(rows):
+            raise ValueError("No input provided — send a JSON object of feature values.")
         df = pd.DataFrame(rows)
+        required = self.bundle.get("metadata", {}).get("input_columns", [])
+        missing = [c for c in required if c not in df.columns]
+        if missing:
+            raise ValueError(f"Missing required feature column(s): {missing}")
         X = self._pipeline.transform_raw(df, self.bundle)
         model = self.bundle["model"]
-        preds = model.predict(X)
+        # CatBoost returns a 2-D (n, 1) array for classification; ravel to 1-D so
+        # decoding a single prediction doesn't choke on a size-1 array.
+        preds = np.asarray(model.predict(X)).ravel()
         proba = None
         if hasattr(model, "predict_proba"):
             proba = model.predict_proba(X)
@@ -59,10 +68,24 @@ class ModelServer:
                     entry["probability"] = float(proba[i, 1])
                     entry["confidence"] = float(max(proba[i]))
                 else:
-                    entry["probabilities"] = proba[i].tolist()
+                    labels = self._class_labels()
+                    if labels and len(labels) == proba.shape[1]:
+                        # Map each probability to its ORIGINAL class label so a
+                        # consumer can't misread which class a number belongs to.
+                        entry["class_probabilities"] = {
+                            labels[j]: float(proba[i, j]) for j in range(proba.shape[1])
+                        }
+                    else:
+                        entry["probabilities"] = proba[i].tolist()
                     entry["confidence"] = float(proba[i].max())
             results.append(entry)
         return results[0] if single else results
+
+    def _class_labels(self) -> list[str] | None:
+        le = self.bundle.get("label_encoder")
+        if le is not None:
+            return [str(c) for c in le.classes_]
+        return None
 
     def _decode_prediction(self, pred: Any) -> Any:
         le = self.bundle.get("label_encoder")

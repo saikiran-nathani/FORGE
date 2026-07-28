@@ -27,7 +27,9 @@ class ExplainabilityEngine:
         enable_pdp: bool = True,
     ) -> dict[str, Any]:
         output_dir.mkdir(parents=True, exist_ok=True)
-        sample = X.head(min(max_samples, len(X)))
+        # Random sample, not .head() — the first N rows can be non-representative
+        # if the test frame carries any residual ordering (sorted by a feature/target).
+        sample = X.sample(min(max_samples, len(X)), random_state=42) if len(X) else X
 
         summary = self._shap_explain(model, sample, feature_names, model_name, output_dir)
         if summary.get("error"):
@@ -51,7 +53,7 @@ class ExplainabilityEngine:
         if enable_pdp and y is not None:
             summary["pdp"] = self._pdp_explain(model, sample, feature_names, output_dir)
             summary["permutation_importance"] = self._permutation_importance(
-                model, sample, y.head(len(sample)), feature_names, task_type
+                model, sample, y.loc[sample.index], feature_names, task_type
             )
 
         with open(output_dir / "explainability.json", "w") as f:

@@ -63,7 +63,10 @@ class DeploymentService:
 
         return {
             "deployment_id": result.deployment_id,
-            "api_url": result.api_url,
+            # The REAL live endpoint (served by this backend, routed via VITE_API_URL),
+            # not the fabricated http://localhost:8080 the deploy manager returned.
+            "api_url": f"/api/v1/experiments/{experiment_id}/predict",
+            "local_bundle_port": 8080,  # port the downloadable serve.py/Docker bundle uses
             "model_card": str(result.model_card_path),
             "files": result.files,
         }

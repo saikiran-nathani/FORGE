@@ -78,7 +78,9 @@ class ErrorAnalyzer:
                 "true_label": int(y_true[idx]) if np.issubdtype(type(y_true[idx]), np.integer) else float(y_true[idx]),
                 "predicted_label": int(y_pred[idx]) if np.issubdtype(type(y_pred[idx]), np.integer) else float(y_pred[idx]),
                 "loss": float(losses[idx]),
-                "top_features": dict(list(row.items())[:8]),
+                # These are the row's first columns by position, not ranked by
+                # importance — name them honestly (was mislabeled "top_features").
+                "feature_values": dict(list(row.items())[:8]),
             }
             if confidence is not None:
                 record["probability"] = float(confidence[idx])

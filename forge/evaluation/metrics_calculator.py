@@ -59,18 +59,30 @@ class MetricsCalculator:
             "cohen_kappa": float(cohen_kappa_score(y_true, y_pred)),
             "confusion_matrix": confusion_matrix(y_true, y_pred).tolist(),
         }
-        if is_binary and y_proba is not None:
-            proba = y_proba[:, 1] if y_proba.ndim > 1 else y_proba
-            try:
-                metrics["roc_auc"] = float(roc_auc_score(y_true, proba))
-                metrics["pr_auc"] = float(average_precision_score(y_true, proba))
-                metrics["brier_score"] = float(brier_score_loss(y_true, proba))
-                metrics["log_loss"] = float(log_loss(y_true, np.column_stack([1 - proba, proba])))
-                metrics["ece"] = float(self._expected_calibration_error(y_true, proba))
-            except ValueError:
-                metrics["roc_auc"] = None
-            metrics["f1"] = float(f1_score(y_true, y_pred, average="binary", zero_division=0))
+        if y_proba is not None:
+            if is_binary:
+                proba = y_proba[:, 1] if y_proba.ndim > 1 else y_proba
+                # Each metric in its own guard — a failure in one (e.g. log_loss on a
+                # single-class test slice) must not null a metric that succeeded (roc_auc).
+                self._safe_set(metrics, "roc_auc", lambda: float(roc_auc_score(y_true, proba)))
+                self._safe_set(metrics, "pr_auc", lambda: float(average_precision_score(y_true, proba)))
+                self._safe_set(metrics, "brier_score", lambda: float(brier_score_loss(y_true, proba)))
+                self._safe_set(metrics, "log_loss", lambda: float(log_loss(y_true, np.column_stack([1 - proba, proba]))))
+                self._safe_set(metrics, "ece", lambda: float(self._expected_calibration_error(y_true, proba)))
+                metrics["f1"] = float(f1_score(y_true, y_pred, average="binary", zero_division=0))
+            elif y_proba.ndim > 1 and y_proba.shape[1] > 2:
+                # Multiclass previously got NO ranking/calibration metric at all.
+                self._safe_set(metrics, "roc_auc", lambda: float(
+                    roc_auc_score(y_true, y_proba, multi_class="ovr", average="macro")))
+                self._safe_set(metrics, "log_loss", lambda: float(log_loss(y_true, y_proba)))
         return metrics
+
+    @staticmethod
+    def _safe_set(metrics: dict[str, Any], key: str, fn) -> None:
+        try:
+            metrics[key] = fn()
+        except (ValueError, IndexError):
+            metrics[key] = None
 
     def _regression_metrics(
         self, y_true: np.ndarray, y_pred: np.ndarray, n_features: int | None = None
@@ -98,7 +110,10 @@ class MetricsCalculator:
         bins = np.linspace(0, 1, n_bins + 1)
         ece = 0.0
         for i in range(n_bins):
-            mask = (proba >= bins[i]) & (proba < bins[i + 1])
+            # Close the final bin on the right so proba == 1.0 is counted (an open
+            # upper edge silently drops perfectly-confident predictions from ECE).
+            hi = proba <= bins[i + 1] if i == n_bins - 1 else proba < bins[i + 1]
+            mask = (proba >= bins[i]) & hi
             if mask.sum() == 0:
                 continue
             acc = y_true[mask].mean()
