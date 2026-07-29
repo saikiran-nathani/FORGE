@@ -31,7 +31,7 @@ class StatisticalProfiler:
         correlations = self._correlation_analysis(df, column_types)
         missing_analysis = self._missing_analysis(df)
         outlier_analysis = self._outlier_analysis(df, column_types)
-        quality_score = self._compute_quality_score(
+        quality_score, quality_breakdown = self._compute_quality_score(
             df, column_types, missing_analysis, outlier_analysis
         )
         recommended_metric = self._recommend_metric(target_analysis)
@@ -47,6 +47,7 @@ class StatisticalProfiler:
             missing_analysis=missing_analysis,
             outlier_analysis=outlier_analysis,
             quality_score=quality_score,
+            quality_breakdown=quality_breakdown,
             recommended_metric=recommended_metric,
             memory_usage_mb=round(memory_usage_mb, 2),
         )
@@ -356,16 +357,18 @@ class StatisticalProfiler:
         column_types: dict[str, ColumnType],
         missing_analysis: dict[str, Any],
         outlier_analysis: dict[str, Any],
-    ) -> float:
+    ) -> tuple[float, dict[str, float]]:
+        """Weighted data-quality score with a transparent per-component breakdown.
+
+        Each component is measured from the data (not a constant). Timeliness is
+        only included when the data actually has dates — otherwise its weight is
+        dropped and the rest re-normalized, so it isn't a phantom ~85.
+        """
+        n = len(df)
         completeness = (1 - missing_analysis["avg_missing_rate"]) * 100
 
-        id_cols = [c for c, t in column_types.items() if t == ColumnType.ID]
-        if id_cols:
-            uniqueness = np.mean([
-                df[c].nunique() / len(df) for c in id_cols if c in df.columns
-            ]) * 100
-        else:
-            uniqueness = 90.0
+        # Real uniqueness: fraction of non-duplicate rows (was a constant 90).
+        uniqueness = float((1 - df.duplicated().mean()) * 100) if n else 100.0
 
         type_consistency = 95.0
         for col in df.select_dtypes(include="object").columns:
@@ -382,23 +385,26 @@ class StatisticalProfiler:
             if info["iqr_outliers"] > len(df) * 0.1:
                 validity -= 2
 
-        timeliness = 85.0
+        components: dict[str, tuple[float, float]] = {
+            "completeness": (max(0.0, completeness), 0.3),
+            "uniqueness": (max(0.0, uniqueness), 0.2),
+            "type_consistency": (max(0.0, type_consistency), 0.2),
+            "validity": (max(0.0, validity), 0.2),
+        }
         datetime_cols = [c for c, t in column_types.items() if t == ColumnType.DATETIME]
         if datetime_cols:
+            timeliness = 85.0
             for col in datetime_cols:
                 dt = pd.to_datetime(df[col], errors="coerce").dropna()
                 if not dt.empty:
                     days_old = (pd.Timestamp.now(tz=None) - dt.max()).days
                     timeliness = max(50, 100 - days_old / 365 * 10)
+            components["timeliness"] = (timeliness, 0.1)
 
-        score = (
-            completeness * 0.3
-            + uniqueness * 0.2
-            + type_consistency * 0.2
-            + validity * 0.2
-            + timeliness * 0.1
-        )
-        return round(min(100, max(0, score)), 1)
+        total_w = sum(w for _, w in components.values())
+        score = sum(v * (w / total_w) for v, w in components.values())
+        breakdown = {k: round(v, 1) for k, (v, w) in components.items()}
+        return round(min(100, max(0, score)), 1), breakdown
 
     def _recommend_metric(self, target_analysis: dict[str, Any]) -> str:
         if target_analysis["task_type"] == "regression":

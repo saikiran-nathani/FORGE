@@ -332,6 +332,7 @@ class ForgePipeline:
         self._save_artifacts(
             artifact_dir, profile, semantic, test_metrics, engineered_features,
             selection_report, pareto,
+            baseline_metrics=baseline_metrics, warnings=warnings, eval_context=eval_context,
         )
 
         from forge.deployment.model_card_generator import ModelCardGenerator
@@ -470,7 +471,17 @@ class ForgePipeline:
             registry = [m for m in registry if m not in (RidgeModel, LassoModel, ElasticNetModel)]
         return registry
 
-    def _save_artifacts(self, artifact_dir, profile, semantic, metrics, engineered_features, selection, pareto):
+    def _save_artifacts(self, artifact_dir, profile, semantic, metrics, engineered_features, selection, pareto,
+                        baseline_metrics=None, warnings=None, eval_context=None):
+        # Persist the honest reference numbers so the model card (and anything else
+        # reading from disk) can show the baseline comparison + warnings instead of
+        # claiming "No limitations." These live only in memory otherwise.
+        with open(artifact_dir / "honest_context.json", "w") as f:
+            json.dump({
+                "baseline_metrics": baseline_metrics or {},
+                "warnings": warnings or [],
+                "eval_context": eval_context or {},
+            }, f, indent=2)
         with open(artifact_dir / "profile.json", "w") as f:
             json.dump(profile.to_dict(), f, indent=2)
         with open(artifact_dir / "semantic_profile.json", "w") as f:

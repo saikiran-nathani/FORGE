@@ -38,12 +38,16 @@ class ProfileReport:
     quality_score: float
     recommended_metric: str
     memory_usage_mb: float
+    # Per-component sub-scores behind quality_score, so the composite isn't a
+    # black box (e.g. {"completeness": 98.2, "uniqueness": 100.0, ...}).
+    quality_breakdown: dict[str, float] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "n_rows": self.n_rows,
             "n_cols": self.n_cols,
             "quality_score": self.quality_score,
+            "quality_breakdown": self.quality_breakdown,
             "recommended_metric": self.recommended_metric,
             "memory_usage_mb": self.memory_usage_mb,
             "column_types": {k: v.value for k, v in self.column_types.items()},

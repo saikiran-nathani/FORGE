@@ -13,7 +13,6 @@ class TaskType(str, Enum):
     BINARY_CLASSIFICATION = "binary_classification"
     MULTICLASS_CLASSIFICATION = "multiclass_classification"
     REGRESSION = "regression"
-    TIME_SERIES = "time_series"
 
 
 class TaskRouter:
@@ -35,13 +34,9 @@ class TaskRouter:
         n_unique = target_analysis["n_unique"]
         if n_unique == 2:
             return TaskType.BINARY_CLASSIFICATION
-        if 3 <= n_unique <= 50:
-            return TaskType.MULTICLASS_CLASSIFICATION
-
-        forecast_keywords = ("forecast", "time series", "timeseries", "predict future")
-        if any(kw in task_description.lower() for kw in forecast_keywords):
-            return TaskType.TIME_SERIES
-
+        # Everything else non-numeric is multiclass. (Time-series was removed:
+        # there is no forecasting model, and a numeric "forecast" target already
+        # routes to REGRESSION above — honest rather than a dead capability.)
         return TaskType.MULTICLASS_CLASSIFICATION
 
     def is_classification(self, task_type: TaskType) -> bool:

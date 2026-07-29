@@ -24,6 +24,7 @@ class ModelCardGenerator:
         semantic = self._load_json(artifact_dir / "semantic_profile.json")
         fairness = self._load_json(artifact_dir / "fairness" / "fairness_report.json")
         errors = self._load_json(artifact_dir / "errors" / "error_analysis.json")
+        honest = self._load_json(artifact_dir / "honest_context.json")
 
         import joblib
         bundle = joblib.load(artifact_dir / "best_model.joblib")
@@ -39,6 +40,10 @@ class ModelCardGenerator:
             limitations.append("Model underperforms on certain data slices — see error analysis")
         if fairness.get("flags"):
             limitations.extend(fairness["flags"])
+        # Fold in the pipeline's honest-numbers warnings (small data, imbalance,
+        # below-baseline, CV->test gap) so the card can't claim "None identified"
+        # while the run itself flagged concerns.
+        limitations.extend(honest.get("warnings", []))
 
         card = f"""# Model Card: {model_name}
 
@@ -57,6 +62,9 @@ class ModelCardGenerator:
 
 ## Performance Metrics
 {self._format_metrics(metrics)}
+
+## Performance vs Baseline
+{self._format_baseline(metrics, honest.get("baseline_metrics", {}))}
 
 ## Features
 - **Input columns:** {len(bundle.get("metadata", {}).get("input_columns", []))}
@@ -100,6 +108,20 @@ class ModelCardGenerator:
                 lines.append(f"- **{k}:** {v:.4f}")
             else:
                 lines.append(f"- **{k}:** {v}")
+        return "\n".join(lines)
+
+    def _format_baseline(self, metrics: dict[str, Any], baseline: dict[str, Any]) -> str:
+        if not baseline:
+            return "Baseline metrics not available."
+        keys = [k for k in ("roc_auc", "f1", "balanced_accuracy", "accuracy", "rmse", "mae")
+                if k in metrics and k in baseline]
+        if not keys:
+            return "Baseline metrics not available."
+        lines = ["| Metric | Model | Baseline (majority-class / mean) |", "|---|---|---|"]
+        for k in keys:
+            m, b = metrics.get(k), baseline.get(k)
+            if isinstance(m, (int, float)) and isinstance(b, (int, float)):
+                lines.append(f"| {k} | {m:.4f} | {b:.4f} |")
         return "\n".join(lines)
 
     def _format_fairness(self, fairness: dict[str, Any]) -> str:

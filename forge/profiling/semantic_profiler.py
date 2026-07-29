@@ -10,6 +10,12 @@ from forge.llm.client import LLMClient
 from forge.profiling.models import ColumnType, ProfileReport
 
 SENSITIVE_KEYWORDS = {"age", "gender", "sex", "race", "ethnicity", "religion", "disability"}
+# "age" is also a DURATION in many names (account_age, session_age, record_age) —
+# not a person's age. When "age" co-occurs with one of these it isn't protected.
+AGE_DURATION_CONTEXT = {
+    "account", "page", "session", "subscription", "record", "file",
+    "data", "system", "cache", "vintage", "device", "product", "tenure",
+}
 IMPORTANCE_HINTS = {
     "high": {"charge", "price", "amount", "tenure", "salary", "income", "score", "rate"},
     "low": {"id", "name", "note", "comment", "description"},
@@ -111,7 +117,12 @@ Return JSON: {{"columns": {{"col_name": {{...}}}}, "data_quality_summary": "..."
             # otherwise "age" flags usage/mileage/average/page_views as sensitive
             # and the fairness auditor fabricates concerns about non-protected cols.
             tokens = set(re.findall(r"[a-z0-9]+", re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", name).lower()))
-            sensitive = bool(tokens & SENSITIVE_KEYWORDS)
+            matched = tokens & SENSITIVE_KEYWORDS
+            # "age" alongside a duration-context token (account_age_days) is not a
+            # protected attribute; a bare/person "age" (customer_age) still is.
+            if matched == {"age"} and (tokens & AGE_DURATION_CONTEXT):
+                matched = set()
+            sensitive = bool(matched)
             importance = "MEDIUM"
             if any(kw in lower for kw in IMPORTANCE_HINTS["high"]):
                 importance = "HIGH"

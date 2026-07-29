@@ -95,6 +95,11 @@ export default function NewExperimentPage() {
               onChange={(e) => setTask(e.target.value)}
               placeholder="Predict which customers will churn based on usage and billing…"
             />
+            <p className="text-xs text-forge-steel/60 mt-1.5">
+              Guides the LLM-powered analysis (semantic profiling &amp; feature ideas) when an
+              API key is configured. Without a key, the pipeline runs its deterministic
+              heuristics and this is used only for labeling.
+            </p>
           </div>
 
           <div>

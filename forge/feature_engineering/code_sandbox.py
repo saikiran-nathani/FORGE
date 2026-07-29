@@ -1,4 +1,11 @@
-"""Safe execution environment for LLM-generated pandas code."""
+"""Input-validation + restricted-execution layer for LLM-generated feature code.
+
+This is NOT a hardened security sandbox: it validates the code (forbidden
+imports/calls, output shape) and executes it with a restricted ``__builtins__``,
+which stops mistakes and casual misuse — but a determined adversary running
+arbitrary code is out of scope. It is safe in context because the code is
+LLM-authored and the run is gated on the operator's own API key.
+"""
 
 from __future__ import annotations
 
@@ -14,6 +21,15 @@ import pandas as pd
 FORBIDDEN_IMPORTS = {"os", "sys", "subprocess", "socket", "requests", "shutil", "pathlib"}
 FORBIDDEN_CALLS = {"open", "exec", "eval", "compile", "__import__", "getattr", "globals", "locals"}
 ALLOWED_MODULES = {"pandas", "numpy", "sklearn", "math", "datetime", "re", "pd", "np"}
+
+# Only these builtins are exposed to executed code. Everything dangerous
+# (open, eval, exec, __import__, getattr, globals, ...) is absent at runtime,
+# so obfuscation that slips past the source-level checks still can't reach it.
+_SAFE_BUILTIN_NAMES = {
+    "abs", "all", "any", "bool", "dict", "divmod", "enumerate", "filter", "float",
+    "format", "int", "len", "list", "map", "max", "min", "pow", "range", "reversed",
+    "round", "set", "slice", "sorted", "str", "sum", "tuple", "zip",
+}
 
 
 @dataclass
@@ -106,12 +122,21 @@ class CodeSandbox:
         return ""
 
     def _build_namespace(self, df: pd.DataFrame) -> dict[str, Any]:
+        import builtins
         import math
         import datetime
 
         from sklearn import preprocessing
 
+        safe_builtins = {
+            name: getattr(builtins, name)
+            for name in _SAFE_BUILTIN_NAMES
+            if hasattr(builtins, name)
+        }
         return {
+            # Restricted builtins: exec falls back to the real builtins if this key
+            # is absent, so we set it explicitly to a safe whitelist.
+            "__builtins__": safe_builtins,
             "df": df,
             "pd": pd,
             "np": np,

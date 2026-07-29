@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import shutil
 import threading
 import uuid
@@ -47,6 +48,51 @@ class ExperimentStore:
         self.base_dir.mkdir(parents=True, exist_ok=True)
         self._experiments: dict[str, Experiment] = {}
         self._lock = threading.Lock()
+        self._rehydrate()
+
+    def _persist(self, exp: Experiment) -> None:
+        """Write experiment state to disk so it survives a process restart.
+
+        Best-effort: a persistence failure must never break a training run.
+        """
+        try:
+            state = {
+                "id": exp.id, "name": exp.name, "task_description": exp.task_description,
+                "target_column": exp.target_column, "status": exp.status.value,
+                "created_at": exp.created_at, "dataset_path": str(exp.dataset_path),
+                "output_dir": str(exp.output_dir), "error": exp.error, "result": exp.result,
+            }
+            (exp.output_dir / "state.json").write_text(json.dumps(state, default=str))
+        except Exception:
+            pass
+
+    def _rehydrate(self) -> None:
+        """Reload previously-run experiments from disk on startup (D5)."""
+        if not self.base_dir.exists():
+            return
+        for d in self.base_dir.iterdir():
+            state_path = d / "state.json"
+            if not state_path.exists():
+                continue
+            try:
+                s = json.loads(state_path.read_text())
+                status = ExperimentStatus(s["status"])
+                # A stale RUNNING/PENDING state means the server died mid-run.
+                if status in (ExperimentStatus.RUNNING, ExperimentStatus.PENDING):
+                    status = ExperimentStatus.FAILED
+                    s["error"] = s.get("error") or "Interrupted — server restarted mid-run."
+                exp = Experiment(
+                    id=s["id"], name=s.get("name", s["id"]),
+                    task_description=s.get("task_description", ""),
+                    target_column=s["target_column"], status=status,
+                    created_at=s.get("created_at", ""),
+                    dataset_path=Path(s.get("dataset_path", "")),
+                    output_dir=Path(s.get("output_dir", str(d))),
+                    error=s.get("error", ""), result=s.get("result", {}),
+                )
+                self._experiments[exp.id] = exp
+            except Exception:
+                continue
 
     def create(
         self,
@@ -138,11 +184,13 @@ class ExperimentStore:
                 "eda_report": str(result.output_dir / "eda_report.html"),
             }
             exp.progress = "Complete"
+            self._persist(exp)
         except Exception as exc:
             exp.status = ExperimentStatus.FAILED
             exp.stage = "failed"
             exp.error = str(exc)
             exp.progress = "Failed"
+            self._persist(exp)
 
 
 store = ExperimentStore()
