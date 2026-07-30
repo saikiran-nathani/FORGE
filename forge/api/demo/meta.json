@@ -3,5 +3,5 @@
   "name": "Customer Churn (demo)",
   "task_description": "Predict which customers will churn",
   "target_column": "churned",
-  "created_at": "2026-07-28T16:23:30.544759+00:00"
+  "created_at": "2026-07-30T04:36:24.243334+00:00"
 }

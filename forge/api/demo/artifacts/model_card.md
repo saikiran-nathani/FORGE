@@ -1,6 +1,6 @@
 # Model Card: lightgbm
 
-**Generated:** 2026-07-28 16:23 UTC
+**Generated:** 2026-07-30 04:36 UTC
 
 ## Model Details
 - **Model:** lightgbm
@@ -11,7 +11,7 @@
 ## Training Data
 - **Rows:** 1,600
 - **Columns:** 9
-- **Quality Score:** 93.5/100
+- **Quality Score:** 96.7/100
 
 ## Performance Metrics
 - **accuracy:** 0.9469
@@ -29,12 +29,20 @@
 - **ece:** 0.0198
 - **f1:** 0.8982
 
+## Performance vs Baseline
+| Metric | Model | Baseline (majority-class / mean) |
+|---|---|---|
+| roc_auc | 0.9746 | 0.5000 |
+| f1 | 0.8982 | 0.0000 |
+| balanced_accuracy | 0.9295 | 0.5000 |
+| accuracy | 0.9469 | 0.7375 |
+
 ## Features
 - **Input columns:** 8
 - **Engineered features:** 6
 
 ## Fairness Assessment
-No fairness issues flagged.
+No sensitive attributes detected.
 
 ## Known Limitations
 - None identified
@@ -49,4 +57,4 @@ No fairness issues flagged.
 - Adversarial or manipulated inputs
 
 ## Ethical Considerations
-Dataset quality score 93.5/100. Average missing rate 0.0%. Task: Predict which customers will churn.
+Dataset quality score 96.7/100. Average missing rate 0.0%. Task: Predict which customers will churn.

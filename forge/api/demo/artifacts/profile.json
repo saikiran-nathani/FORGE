@@ -1,7 +1,13 @@
 {
   "n_rows": 1600,
   "n_cols": 9,
-  "quality_score": 93.5,
+  "quality_score": 96.7,
+  "quality_breakdown": {
+    "completeness": 100.0,
+    "uniqueness": 100.0,
+    "type_consistency": 95.0,
+    "validity": 90.0
+  },
   "recommended_metric": "f1",
   "memory_usage_mb": 0.11,
   "column_types": {

@@ -21,11 +21,11 @@ Primary metrics indicate strong performance.
 - f1: 0.8982
 
 ## Key Feature Insights
-- **logins_last_30d** (SHAP: 1.9848)
-- **tenure_months_x_monthly_charges** (SHAP: 1.0624)
-- **monthly_charges_log** (SHAP: 0.6808)
-- **tenure_months_ratio_monthly_charges** (SHAP: 0.6368)
-- **tenure_months** (SHAP: 0.2110)
+- **logins_last_30d** (SHAP: 2.0481)
+- **tenure_months_x_monthly_charges** (SHAP: 1.0290)
+- **monthly_charges_log** (SHAP: 0.7116)
+- **tenure_months_ratio_monthly_charges** (SHAP: 0.6827)
+- **tenure_months** (SHAP: 0.2403)
 
 ## Error Patterns
 - No significant underperforming slices detected

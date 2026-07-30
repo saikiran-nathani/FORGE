@@ -3,27 +3,27 @@
   "top_features": [
     {
       "feature": "logins_last_30d",
-      "mean_abs_shap": 1.984787054144241
+      "mean_abs_shap": 2.0480790701572076
     },
     {
       "feature": "tenure_months_x_monthly_charges",
-      "mean_abs_shap": 1.062406991139311
+      "mean_abs_shap": 1.0290090314056348
     },
     {
       "feature": "monthly_charges_log",
-      "mean_abs_shap": 0.6808374924388023
+      "mean_abs_shap": 0.7115714137872375
     },
     {
       "feature": "tenure_months_ratio_monthly_charges",
-      "mean_abs_shap": 0.6367929686844909
+      "mean_abs_shap": 0.6826877185332891
     },
     {
       "feature": "tenure_months",
-      "mean_abs_shap": 0.21097641998683095
+      "mean_abs_shap": 0.24031410293838687
     },
     {
       "feature": "tenure_months_log",
-      "mean_abs_shap": 0.0528303709749326
+      "mean_abs_shap": 0.05198763001534206
     }
   ],
   "n_samples_explained": 200

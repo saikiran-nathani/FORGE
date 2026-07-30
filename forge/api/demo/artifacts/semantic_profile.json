@@ -79,7 +79,7 @@
     "account_age_days": {
       "meaning": "Column representing account age days",
       "importance": "MEDIUM",
-      "sensitive": true,
+      "sensitive": false,
       "suggested_transforms": [
         "Log transform account_age_days if skewed",
         "Z-score normalize account_age_days",
@@ -88,7 +88,7 @@
       "quality_issues": "None detected"
     }
   },
-  "data_quality_summary": "Dataset quality score 93.5/100. Average missing rate 0.0%. Task: Predict which customers will churn.",
+  "data_quality_summary": "Dataset quality score 96.7/100. Average missing rate 0.0%. Task: Predict which customers will churn.",
   "key_interactions": [
     "tenure_months \u00d7 monthly_charges"
   ],
