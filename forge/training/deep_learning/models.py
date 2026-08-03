@@ -5,7 +5,11 @@ from typing import Any
 import optuna
 
 from forge.training.base_model import BaseModel
-from forge.training.deep_learning.nn_wrappers import TabularMLP, TabularTransformer
+from forge.training.deep_learning.nn_wrappers import (
+    TabularFTTransformer,
+    TabularMLP,
+    TabularTransformer,
+)
 from forge.training.task_router import TaskType
 
 
@@ -52,3 +56,27 @@ class TabTransformerModel(BaseModel):
     def build_model(self, params: dict[str, Any]) -> Any:
         task = "regression" if self.task_type == TaskType.REGRESSION else "classification"
         return TabularTransformer(task_type=task, **params)
+
+
+class FTTransformerModel(BaseModel):
+    name = "ft_transformer"
+    family = "deep_learning"
+
+    def get_search_space(self, trial: optuna.Trial) -> dict[str, Any]:
+        return {
+            "hidden_dim": trial.suggest_categorical("hidden_dim", [32, 64, 128]),
+            "n_layers": trial.suggest_int("n_layers", 1, 3),
+            "dropout": trial.suggest_float("dropout", 0.1, 0.4),
+            "lr": trial.suggest_float("lr", 1e-4, 5e-3, log=True),
+            "weight_decay": trial.suggest_float("weight_decay", 1e-6, 1e-2, log=True),
+            "batch_size": trial.suggest_categorical("batch_size", [64, 128]),
+            # Transformers escape initialization slowly on tabular data — give it a
+            # larger budget than the MLP so it actually converges within HPO.
+            "epochs": 60,
+            "patience": 10,
+            "random_state": 42,
+        }
+
+    def build_model(self, params: dict[str, Any]) -> Any:
+        task = "regression" if self.task_type == TaskType.REGRESSION else "classification"
+        return TabularFTTransformer(task_type=task, **params)

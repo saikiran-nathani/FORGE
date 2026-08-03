@@ -44,9 +44,13 @@ def _load_dl_models() -> list:
     run without the (~2GB) deep-learning extra. Install with: pip install -e '.[deep-learning]'
     """
     try:
-        from forge.training.deep_learning.models import MLPModel, TabTransformerModel
+        from forge.training.deep_learning.models import (
+            FTTransformerModel,
+            MLPModel,
+            TabTransformerModel,
+        )
 
-        return [MLPModel, TabTransformerModel]
+        return [MLPModel, TabTransformerModel, FTTransformerModel]
     except ImportError:
         return []
 
@@ -253,7 +257,16 @@ class ForgePipeline:
         # CatBoost returns a 2-D (n, 1) array for classification; ravel so every
         # downstream consumer (metrics, error analysis, fairness) gets 1-D preds.
         y_pred = np.asarray(best.fitted_model.predict(features.X_test)).ravel()
-        y_proba = getattr(best.fitted_model, "predict_proba", lambda x: None)(features.X_test)
+        # predict_proba can EXIST yet raise when called (e.g. a soft-voting
+        # ensemble containing an SGD tuned to a proba-less loss) — guard it so a
+        # probability failure degrades to "no proba", never crashes the run.
+        try:
+            y_proba = (
+                best.fitted_model.predict_proba(features.X_test)
+                if hasattr(best.fitted_model, "predict_proba") else None
+            )
+        except Exception:
+            y_proba = None
 
         is_binary = task_type == TaskType.BINARY_CLASSIFICATION
         task_str = "regression" if task_type == TaskType.REGRESSION else "classification"

@@ -201,3 +201,83 @@ class TabularTransformer(TabularMLP):
         )
         self.model_ = DLTrainer(config, self.task_type).train(network, X, y_train)
         return self
+
+
+class FTTransformerNetwork(nn.Module):
+    """FT-Transformer (Gorishniy et al., 2021) for numerical tabular data.
+
+    The key difference from the simplified TabTransformer (one shared linear
+    tokenizer) is a PER-FEATURE tokenizer: each scalar x_i is embedded as
+    x_i * W_i + b_i with its own learned vectors W_i, b_i in R^d. A learnable
+    [CLS] token is prepended, a Transformer encoder mixes the feature tokens, and
+    the [CLS] representation feeds the prediction head.
+    """
+
+    def __init__(
+        self,
+        n_features: int,
+        n_outputs: int,
+        d_model: int = 64,
+        n_layers: int = 3,
+        dropout: float = 0.1,
+    ):
+        super().__init__()
+        # Per-feature numerical feature tokenizer.
+        self.feat_weight = nn.Parameter(torch.empty(n_features, d_model))
+        self.feat_bias = nn.Parameter(torch.empty(n_features, d_model))
+        nn.init.normal_(self.feat_weight, std=0.02)
+        nn.init.normal_(self.feat_bias, std=0.02)
+        self.cls = nn.Parameter(torch.randn(1, 1, d_model) * 0.02)
+        # Largest head count <= 8 that divides d_model (attention requires this).
+        n_heads = max(h for h in (8, 4, 2, 1) if d_model % h == 0)
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model, nhead=n_heads, dim_feedforward=d_model * 4,
+            dropout=dropout, batch_first=True, activation="gelu",
+        )
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_layers)
+        self.norm = nn.LayerNorm(d_model)
+        self.head = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model // 2, n_outputs),
+        )
+        self.n_features = n_features
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: (batch, n_features) -> per-feature tokens (batch, n_features, d_model)
+        tokens = x.unsqueeze(-1) * self.feat_weight + self.feat_bias
+        cls = self.cls.expand(x.size(0), -1, -1)
+        tokens = torch.cat([cls, tokens], dim=1)
+        encoded = self.encoder(tokens)
+        return self.head(self.norm(encoded[:, 0]))
+
+
+class TabularFTTransformer(TabularMLP):
+    """Sklearn wrapper using FTTransformerNetwork (real FT-Transformer)."""
+
+    def fit(self, X, y):
+        X = np.asarray(X, dtype=np.float32)
+        y = np.asarray(y)
+        self.n_features_in_ = X.shape[1]
+        is_regression = self.task_type == "regression"
+
+        if is_regression:
+            n_outputs = 1
+            y_train = y.astype(np.float32)
+        else:
+            self.classes_ = np.unique(y)
+            n_classes = len(self.classes_)
+            n_outputs = 1 if n_classes == 2 else n_classes
+            y_train = y.astype(np.int64)
+
+        network = FTTransformerNetwork(
+            self.n_features_in_, n_outputs,
+            d_model=self.hidden_dim, n_layers=self.n_layers, dropout=self.dropout,
+        )
+        config = DLConfig(
+            lr=self.lr, weight_decay=self.weight_decay, epochs=self.epochs,
+            batch_size=self.batch_size, patience=self.patience, random_state=self.random_state,
+        )
+        self.model_ = DLTrainer(config, self.task_type).train(network, X, y_train)
+        return self

@@ -58,8 +58,10 @@ class SGDModel(BaseModel):
         if self.task_type == TaskType.REGRESSION:
             params["loss"] = trial.suggest_categorical("loss", ["squared_error", "huber"])
         else:
+            # Only losses that support predict_proba — "hinge" has none, which
+            # breaks soft-voting ensembles and probability-based evaluation.
             params["loss"] = trial.suggest_categorical(
-                "loss", ["hinge", "log_loss", "modified_huber"]
+                "loss", ["log_loss", "modified_huber"]
             )
         return params
 

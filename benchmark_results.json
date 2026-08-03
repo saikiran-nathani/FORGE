@@ -1,0 +1,775 @@
+{
+  "breast_cancer": {
+    "task_type": "binary_classification",
+    "n_rows": 569,
+    "n_features": 30,
+    "best_model": "logistic_regression",
+    "best_metrics": {
+      "accuracy": 0.956140350877193,
+      "balanced_accuracy": 0.9603174603174602,
+      "f1_macro": 0.9535338713621913,
+      "f1_weighted": 0.9564299597121931,
+      "precision_macro": 0.9483091787439614,
+      "recall_macro": 0.9603174603174602,
+      "mcc": 0.9085472857180888,
+      "cohen_kappa": 0.9071358748778103,
+      "confusion_matrix": [
+        [
+          41,
+          1
+        ],
+        [
+          4,
+          68
+        ]
+      ],
+      "roc_auc": 0.9940476190476191,
+      "pr_auc": 0.9963221104249339,
+      "brier_score": 0.027809831872235475,
+      "log_loss": 0.09371331812702723,
+      "ece": 0.0335329379113881,
+      "f1": 0.9645390070921985
+    },
+    "metric": "f1",
+    "runtime_s": 132.0,
+    "trials": 125,
+    "n_models": 16,
+    "leaderboard": [
+      {
+        "model": "logistic_regression",
+        "cv_score": 0.9877,
+        "latency_ms": 0.15
+      },
+      {
+        "model": "voting_ensemble",
+        "cv_score": 0.9876,
+        "latency_ms": 0.52
+      },
+      {
+        "model": "sgd",
+        "cv_score": 0.9859,
+        "latency_ms": 0.15
+      },
+      {
+        "model": "stacking_ensemble",
+        "cv_score": 0.9789,
+        "latency_ms": 1.49
+      },
+      {
+        "model": "catboost",
+        "cv_score": 0.9771,
+        "latency_ms": 0.13
+      },
+      {
+        "model": "lightgbm",
+        "cv_score": 0.9753,
+        "latency_ms": 0.42
+      },
+      {
+        "model": "xgboost",
+        "cv_score": 0.9737,
+        "latency_ms": 0.47
+      },
+      {
+        "model": "knn",
+        "cv_score": 0.9725,
+        "latency_ms": 0.74
+      },
+      {
+        "model": "extra_trees",
+        "cv_score": 0.9708,
+        "latency_ms": 7.08
+      },
+      {
+        "model": "svm",
+        "cv_score": 0.9698,
+        "latency_ms": 0.29
+      },
+      {
+        "model": "random_forest",
+        "cv_score": 0.9698,
+        "latency_ms": 22.91
+      },
+      {
+        "model": "naive_bayes",
+        "cv_score": 0.9547,
+        "latency_ms": 0.15
+      },
+      {
+        "model": "decision_tree",
+        "cv_score": 0.9436,
+        "latency_ms": 0.13
+      },
+      {
+        "model": "mlp",
+        "cv_score": 0.9066,
+        "latency_ms": 0.18
+      },
+      {
+        "model": "ft_transformer",
+        "cv_score": 0.7703,
+        "latency_ms": 4.03
+      },
+      {
+        "model": "tab_transformer",
+        "cv_score": 0.7606,
+        "latency_ms": 4.82
+      }
+    ]
+  },
+  "wine": {
+    "task_type": "multiclass_classification",
+    "n_rows": 178,
+    "n_features": 13,
+    "best_model": "knn",
+    "best_metrics": {
+      "accuracy": 0.9722222222222222,
+      "balanced_accuracy": 0.9666666666666667,
+      "f1_macro": 0.9709618874773139,
+      "f1_weighted": 0.9719701552732407,
+      "precision_macro": 0.9777777777777779,
+      "recall_macro": 0.9666666666666667,
+      "mcc": 0.958888466336381,
+      "cohen_kappa": 0.9577464788732395,
+      "confusion_matrix": [
+        [
+          12,
+          0,
+          0
+        ],
+        [
+          0,
+          14,
+          0
+        ],
+        [
+          0,
+          1,
+          9
+        ]
+      ],
+      "roc_auc": 0.9978354978354979,
+      "log_loss": 0.12215002857485656
+    },
+    "metric": "f1_macro",
+    "runtime_s": 133.4,
+    "trials": 125,
+    "n_models": 16,
+    "leaderboard": [
+      {
+        "model": "knn",
+        "cv_score": 0.9933,
+        "latency_ms": 0.42
+      },
+      {
+        "model": "extra_trees",
+        "cv_score": 0.986,
+        "latency_ms": 5.84
+      },
+      {
+        "model": "stacking_ensemble",
+        "cv_score": 0.986,
+        "latency_ms": 7.71
+      },
+      {
+        "model": "lightgbm",
+        "cv_score": 0.9853,
+        "latency_ms": 0.46
+      },
+      {
+        "model": "naive_bayes",
+        "cv_score": 0.9798,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "sgd",
+        "cv_score": 0.9798,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "voting_ensemble",
+        "cv_score": 0.9786,
+        "latency_ms": 30.2
+      },
+      {
+        "model": "logistic_regression",
+        "cv_score": 0.9735,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "xgboost",
+        "cv_score": 0.9716,
+        "latency_ms": 0.59
+      },
+      {
+        "model": "catboost",
+        "cv_score": 0.9716,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "svm",
+        "cv_score": 0.9659,
+        "latency_ms": 0.2
+      },
+      {
+        "model": "random_forest",
+        "cv_score": 0.9593,
+        "latency_ms": 15.49
+      },
+      {
+        "model": "decision_tree",
+        "cv_score": 0.9048,
+        "latency_ms": 0.13
+      },
+      {
+        "model": "tab_transformer",
+        "cv_score": 0.3306,
+        "latency_ms": 1.96
+      },
+      {
+        "model": "mlp",
+        "cv_score": 0.2985,
+        "latency_ms": 0.17
+      },
+      {
+        "model": "ft_transformer",
+        "cv_score": 0.2788,
+        "latency_ms": 1.08
+      }
+    ]
+  },
+  "digits": {
+    "task_type": "multiclass_classification",
+    "n_rows": 800,
+    "n_features": 64,
+    "best_model": "svm",
+    "best_metrics": {
+      "accuracy": 0.98125,
+      "balanced_accuracy": 0.982312091503268,
+      "f1_macro": 0.9824791421945122,
+      "f1_weighted": 0.9812384792626728,
+      "precision_macro": 0.9830065359477125,
+      "recall_macro": 0.982312091503268,
+      "mcc": 0.9791956256540432,
+      "cohen_kappa": 0.9791530944625407,
+      "confusion_matrix": [
+        [
+          15,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          15,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          15,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          16,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          17,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          1,
+          17,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          17,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          15,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          14,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          16
+        ]
+      ],
+      "roc_auc": 0.9997960792903703,
+      "log_loss": 0.15320980314077123
+    },
+    "metric": "f1_macro",
+    "runtime_s": 837.9,
+    "trials": 125,
+    "n_models": 16,
+    "leaderboard": [
+      {
+        "model": "svm",
+        "cv_score": 0.9859,
+        "latency_ms": 1.47
+      },
+      {
+        "model": "stacking_ensemble",
+        "cv_score": 0.983,
+        "latency_ms": 15.12
+      },
+      {
+        "model": "voting_ensemble",
+        "cv_score": 0.9829,
+        "latency_ms": 2.57
+      },
+      {
+        "model": "catboost",
+        "cv_score": 0.9767,
+        "latency_ms": 0.5
+      },
+      {
+        "model": "logistic_regression",
+        "cv_score": 0.9723,
+        "latency_ms": 0.19
+      },
+      {
+        "model": "extra_trees",
+        "cv_score": 0.9606,
+        "latency_ms": 9.1
+      },
+      {
+        "model": "knn",
+        "cv_score": 0.9588,
+        "latency_ms": 1.21
+      },
+      {
+        "model": "lightgbm",
+        "cv_score": 0.9543,
+        "latency_ms": 0.63
+      },
+      {
+        "model": "sgd",
+        "cv_score": 0.9514,
+        "latency_ms": 0.2
+      },
+      {
+        "model": "random_forest",
+        "cv_score": 0.9507,
+        "latency_ms": 25.32
+      },
+      {
+        "model": "xgboost",
+        "cv_score": 0.9387,
+        "latency_ms": 1.64
+      },
+      {
+        "model": "naive_bayes",
+        "cv_score": 0.8838,
+        "latency_ms": 0.28
+      },
+      {
+        "model": "decision_tree",
+        "cv_score": 0.7525,
+        "latency_ms": 0.18
+      },
+      {
+        "model": "mlp",
+        "cv_score": 0.0671,
+        "latency_ms": 0.06
+      },
+      {
+        "model": "tab_transformer",
+        "cv_score": 0.0345,
+        "latency_ms": 6.64
+      },
+      {
+        "model": "ft_transformer",
+        "cv_score": 0.023,
+        "latency_ms": 13.21
+      }
+    ]
+  },
+  "diabetes": {
+    "task_type": "regression",
+    "n_rows": 442,
+    "n_features": 10,
+    "best_model": "lasso",
+    "best_metrics": {
+      "rmse": 52.76399803560313,
+      "mae": 42.82613017986827,
+      "r2": 0.47452628372137184,
+      "adjusted_r2": 0.41466218946178124,
+      "mape": 0.3745061992375974,
+      "max_error": 145.99383911677796
+    },
+    "metric": "rmse",
+    "runtime_s": 247.7,
+    "trials": 135,
+    "n_models": 15,
+    "leaderboard": [
+      {
+        "model": "lasso",
+        "cv_score": 55.7369,
+        "latency_ms": 0.13
+      },
+      {
+        "model": "elastic_net",
+        "cv_score": 55.7604,
+        "latency_ms": 0.13
+      },
+      {
+        "model": "ridge",
+        "cv_score": 55.7925,
+        "latency_ms": 0.13
+      },
+      {
+        "model": "sgd",
+        "cv_score": 55.8374,
+        "latency_ms": 0.13
+      },
+      {
+        "model": "xgboost",
+        "cv_score": 57.0751,
+        "latency_ms": 0.55
+      },
+      {
+        "model": "catboost",
+        "cv_score": 57.2565,
+        "latency_ms": 0.15
+      },
+      {
+        "model": "random_forest",
+        "cv_score": 57.3612,
+        "latency_ms": 13.61
+      },
+      {
+        "model": "extra_trees",
+        "cv_score": 57.4118,
+        "latency_ms": 6.36
+      },
+      {
+        "model": "knn",
+        "cv_score": 57.7107,
+        "latency_ms": 0.48
+      },
+      {
+        "model": "lightgbm",
+        "cv_score": 58.2811,
+        "latency_ms": 0.51
+      },
+      {
+        "model": "mlp",
+        "cv_score": 58.8452,
+        "latency_ms": 0.2
+      },
+      {
+        "model": "svm",
+        "cv_score": 62.2767,
+        "latency_ms": 0.86
+      },
+      {
+        "model": "decision_tree",
+        "cv_score": 66.3456,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "ft_transformer",
+        "cv_score": 119.7768,
+        "latency_ms": 4.58
+      },
+      {
+        "model": "tab_transformer",
+        "cv_score": 143.556,
+        "latency_ms": 3.44
+      }
+    ]
+  },
+  "synthetic_reg": {
+    "task_type": "regression",
+    "n_rows": 800,
+    "n_features": 12,
+    "best_model": "lasso",
+    "best_metrics": {
+      "rmse": 28.564883087061318,
+      "mae": 20.43194839049463,
+      "r2": 0.9677931741992444,
+      "adjusted_r2": 0.9641896132704885,
+      "mape": 1.3527965150059473,
+      "max_error": 103.37158830707708
+    },
+    "metric": "rmse",
+    "runtime_s": 507.0,
+    "trials": 135,
+    "n_models": 15,
+    "leaderboard": [
+      {
+        "model": "lasso",
+        "cv_score": 30.571,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "elastic_net",
+        "cv_score": 30.573,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "ridge",
+        "cv_score": 30.5754,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "sgd",
+        "cv_score": 30.6058,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "mlp",
+        "cv_score": 35.3943,
+        "latency_ms": 0.15
+      },
+      {
+        "model": "catboost",
+        "cv_score": 40.4752,
+        "latency_ms": 0.21
+      },
+      {
+        "model": "svm",
+        "cv_score": 52.0864,
+        "latency_ms": 1.6
+      },
+      {
+        "model": "lightgbm",
+        "cv_score": 54.314,
+        "latency_ms": 0.4
+      },
+      {
+        "model": "xgboost",
+        "cv_score": 57.2734,
+        "latency_ms": 0.86
+      },
+      {
+        "model": "ft_transformer",
+        "cv_score": 84.1091,
+        "latency_ms": 7.0
+      },
+      {
+        "model": "knn",
+        "cv_score": 89.0882,
+        "latency_ms": 3.51
+      },
+      {
+        "model": "random_forest",
+        "cv_score": 95.5571,
+        "latency_ms": 15.86
+      },
+      {
+        "model": "extra_trees",
+        "cv_score": 99.9756,
+        "latency_ms": 6.39
+      },
+      {
+        "model": "tab_transformer",
+        "cv_score": 124.3324,
+        "latency_ms": 5.14
+      },
+      {
+        "model": "decision_tree",
+        "cv_score": 128.0867,
+        "latency_ms": 0.14
+      }
+    ]
+  },
+  "churn": {
+    "task_type": "binary_classification",
+    "n_rows": 800,
+    "n_features": 8,
+    "best_model": "catboost",
+    "best_metrics": {
+      "accuracy": 0.95,
+      "balanced_accuracy": 0.9143311468892865,
+      "f1_macro": 0.9333333333333333,
+      "f1_weighted": 0.9487500000000001,
+      "precision_macro": 0.958031201933641,
+      "recall_macro": 0.9143311468892865,
+      "mcc": 0.8712671076271473,
+      "cohen_kappa": 0.866916198793928,
+      "confusion_matrix": [
+        [
+          116,
+          1
+        ],
+        [
+          7,
+          36
+        ]
+      ],
+      "roc_auc": 0.9910554561717353,
+      "pr_auc": 0.9794735761423428,
+      "brier_score": 0.036209856030498005,
+      "log_loss": 0.12875701044792803,
+      "ece": 0.04906377018319014,
+      "f1": 0.9
+    },
+    "metric": "f1",
+    "runtime_s": 175.1,
+    "trials": 125,
+    "n_models": 16,
+    "leaderboard": [
+      {
+        "model": "catboost",
+        "cv_score": 0.8989,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "voting_ensemble",
+        "cv_score": 0.8989,
+        "latency_ms": 9.62
+      },
+      {
+        "model": "lightgbm",
+        "cv_score": 0.8974,
+        "latency_ms": 0.46
+      },
+      {
+        "model": "stacking_ensemble",
+        "cv_score": 0.8931,
+        "latency_ms": 49.96
+      },
+      {
+        "model": "extra_trees",
+        "cv_score": 0.8859,
+        "latency_ms": 9.24
+      },
+      {
+        "model": "random_forest",
+        "cv_score": 0.8691,
+        "latency_ms": 26.95
+      },
+      {
+        "model": "xgboost",
+        "cv_score": 0.865,
+        "latency_ms": 0.52
+      },
+      {
+        "model": "knn",
+        "cv_score": 0.8581,
+        "latency_ms": 0.45
+      },
+      {
+        "model": "svm",
+        "cv_score": 0.8426,
+        "latency_ms": 0.35
+      },
+      {
+        "model": "logistic_regression",
+        "cv_score": 0.8146,
+        "latency_ms": 0.15
+      },
+      {
+        "model": "sgd",
+        "cv_score": 0.8049,
+        "latency_ms": 0.15
+      },
+      {
+        "model": "decision_tree",
+        "cv_score": 0.7845,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "naive_bayes",
+        "cv_score": 0.6809,
+        "latency_ms": 0.15
+      },
+      {
+        "model": "ft_transformer",
+        "cv_score": 0.4217,
+        "latency_ms": 2.24
+      },
+      {
+        "model": "mlp",
+        "cv_score": 0.3579,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "tab_transformer",
+        "cv_score": 0.3377,
+        "latency_ms": 2.15
+      }
+    ]
+  }
+}

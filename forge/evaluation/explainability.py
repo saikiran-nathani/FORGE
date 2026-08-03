@@ -220,7 +220,7 @@ class ExplainabilityEngine:
         import shap
 
         tree_models = {"xgboost", "lightgbm", "catboost", "random_forest", "extra_trees", "decision_tree"}
-        dl_models = {"mlp", "tab_transformer"}
+        dl_models = {"mlp", "tab_transformer", "ft_transformer"}
         try:
             if any(t in model_name for t in tree_models):
                 explainer = shap.TreeExplainer(model)

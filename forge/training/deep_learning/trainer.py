@@ -27,6 +27,12 @@ class DLTrainer:
     def __init__(self, config: DLConfig, task_type: str):
         self.config = config
         self.task_type = task_type
+        # Cap CPU threads for these tiny tabular models. Uncapped, torch
+        # oversubscribes all cores and thrashes under the many small fits of
+        # cross-validated HPO — turning a ~15s job into hours on CPU. Single-
+        # threaded is faster here and avoids the near-livelock.
+        if not torch.cuda.is_available():
+            torch.set_num_threads(1)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def train(
