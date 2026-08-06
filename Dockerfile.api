@@ -2,6 +2,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# LightGBM / XGBoost load native libraries that need the OpenMP runtime (libgomp);
+# python:3.11-slim doesn't ship it, so their imports crash at startup without this.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY pyproject.toml .
 COPY forge/ forge/
 RUN pip install --no-cache-dir .
