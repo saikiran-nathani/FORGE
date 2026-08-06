@@ -1,0 +1,22 @@
+# Keep Docker build contexts lean (applies to Dockerfile.api and Dockerfile.frontend).
+# Without this, `COPY . .` pulls ~2 GB (.venv, node_modules, deployments) into the image.
+**/__pycache__/
+**/*.pyc
+**/node_modules/
+.venv/
+venv/
+.git/
+.github/
+.claude/
+.pytest_cache/
+.coverage
+htmlcov/
+deployments/
+experiments/
+outputs/
+mlflow.db
+*.log
+frontend/dist/
+evaluation-deck/
+AUDIT_FINDINGS.md
+.DS_Store

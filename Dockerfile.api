@@ -9,4 +9,6 @@ RUN pip install --no-cache-dir .
 COPY . .
 
 EXPOSE 8000
-CMD ["uvicorn", "forge.api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Shell form so ${PORT} is substituted — Render/Railway/Fly inject the port via
+# $PORT; fall back to 8000 for local `docker run`.
+CMD uvicorn forge.api.app:app --host 0.0.0.0 --port ${PORT:-8000}

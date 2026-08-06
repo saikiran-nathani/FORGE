@@ -1,0 +1,18 @@
+# Render Blueprint — deploys the FORGE FastAPI backend from Dockerfile.api.
+# Use it: Render → New → Blueprint → connect this repo. The frontend stays on
+# Netlify; after this service is live, set VITE_API_URL there to its URL and
+# redeploy the frontend (Vite bakes env vars at build time).
+services:
+  - type: web
+    name: forge-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.api
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    # 512 MB (free/starter) can OOM on the ML stack at startup. If the service
+    # crashes with out-of-memory, bump this to `standard` (2 GB).
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
