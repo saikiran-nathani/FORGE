@@ -42,8 +42,6 @@ class FeaturePipeline:
         test_size: float = 0.2,
     ) -> FeaturePipelineResult:
         df = df.dropna(subset=[self.target_column]).copy()
-        df, engineered = self._apply_stateless_engineering(df, profile)
-        engineered_names = [c for r in engineered for c in r["new_columns"]]
         feature_cols = [c for c in df.columns if c != self.target_column]
         id_cols = [
             c for c in feature_cols
@@ -72,15 +70,26 @@ class FeaturePipeline:
             stratify=stratify,
         )
 
+        # Declarative feature ops, FIT ON THE TRAINING SPLIT ONLY. Fitting here
+        # (rather than before the split) is what makes STATEFUL features legal:
+        # target/frequency encodings and clip bounds learn from train rows alone,
+        # and the fitted parameters are persisted so a single inference row
+        # reproduces the identical value.
+        feature_ops, engineered = self._fit_feature_ops(X_train, y_train, profile, feature_cols)
+        if feature_ops is not None:
+            X_train = feature_ops.transform(X_train)
+            X_test = feature_ops.transform(X_test)
+        engineered_names = [c for r in engineered for c in r["new_columns"]]
+
         numerical_cols = [
             c for c in feature_cols
             if profile.column_types.get(c) in (ColumnType.NUMERICAL, ColumnType.DATETIME)
         ]
-        # Stateless engineered features are all numeric — route them into the
-        # preprocessor explicitly (they aren't in profile.column_types, so
-        # remainder="drop" would otherwise silently discard them: bug #28).
+        # Engineered outputs are all numeric — route them into the preprocessor
+        # explicitly (they aren't in profile.column_types, so remainder="drop"
+        # would otherwise silently discard them: bug #28).
         numerical_cols += [
-            c for c in engineered_names if c in feature_cols and c not in numerical_cols
+            c for c in engineered_names if c in X_train.columns and c not in numerical_cols
         ]
         categorical_cols = [
             c for c in feature_cols
@@ -142,6 +151,8 @@ class FeaturePipeline:
                 # inference from these, so they must NOT be listed as required inputs.
                 "input_columns": [c for c in feature_cols if c not in engineered_names],
                 "engineered_features": engineered,
+                "feature_ops": feature_ops,
+                "rejected_specs": getattr(self, "rejected_specs", []),
                 "clip_bounds": clip_bounds,
             },
         )
@@ -171,9 +182,11 @@ class FeaturePipeline:
 
         cols = [c for c in meta["input_columns"] if c in df.columns]
         X = df[cols].copy()
-        # Recreate the SAME stateless engineered features the model was trained on
-        # (deterministic from the raw row + persisted profile — no fitted state).
-        X, _ = self._apply_stateless_engineering(X, profile)
+        # Replay the FITTED feature ops: parameters were learned on the training
+        # split and persisted, so a single row reproduces the identical values.
+        ops = meta.get("feature_ops")
+        if ops is not None:
+            X = ops.transform(X)
         X = self._handle_missing_indicators(X, profile)
         X = self._apply_clip_bounds(X, meta.get("clip_bounds", {}))
         for col in meta.get("categorical_cols", []):
@@ -191,6 +204,79 @@ class FeaturePipeline:
         if selected:
             result = result[[c for c in selected if c in result.columns]]
         return result
+
+    def _build_feature_specs(self, profile: ProfileReport, feature_cols: list[str], task_type: str):
+        """Propose feature transforms declaratively, as validated op specs.
+
+        Specs (not generated code) are what make the engineered features safe:
+        each op has a fit/transform pair, so a stateful transform learns its
+        parameters from the training split and replays them exactly at inference.
+        """
+        from forge.feature_engineering.feature_ops import FeatureSpec
+
+        numeric = [c for c in feature_cols if profile.column_types.get(c) == ColumnType.NUMERICAL]
+        datetimes = [c for c in feature_cols if profile.column_types.get(c) == ColumnType.DATETIME]
+        categoricals = [
+            c for c in feature_cols
+            if profile.column_types.get(c) in (ColumnType.CATEGORICAL, ColumnType.BINARY)
+        ]
+        specs: list[FeatureSpec] = []
+        for col in numeric:
+            specs.append(FeatureSpec("log1p", {"col": col}))
+        for col in datetimes:
+            specs.append(FeatureSpec("datetime_parts", {"col": col}))
+        if len(numeric) >= 2:
+            a, b = numeric[0], numeric[1]
+            specs.append(FeatureSpec("product", {"a": a, "b": b}))
+            specs.append(FeatureSpec("ratio", {"a": a, "b": b}))
+        # Stateful ops — only now safe, because they are fitted on train only.
+        for col in categoricals:
+            profile_col = profile.column_profiles.get(col)
+            n_unique = getattr(profile_col, "n_unique", 0) or 0
+            if n_unique >= 3:
+                specs.append(FeatureSpec("frequency_encode", {"col": col}))
+                # Target encoding of a multiclass label would average class
+                # INDICES, which is meaningless — restrict to binary/regression.
+                if task_type == "regression" or profile.target_analysis.get("is_binary"):
+                    specs.append(FeatureSpec("target_encode", {"col": col, "smoothing": 10.0}))
+        return specs
+
+    def _fit_feature_ops(self, X_train, y_train, profile: ProfileReport, feature_cols: list[str]):
+        """Validate + fit the proposed specs on the training split.
+
+        Returns (fitted_transformer_or_None, [{source_column, new_columns}]).
+        Invalid specs are dropped with their reason recorded rather than silently
+        ignored; if fitting fails the run continues WITHOUT engineered features
+        (reported), never with half-fitted ones.
+        """
+        from forge.feature_engineering.feature_ops import FeatureSpecTransformer, validate_specs
+
+        task_type = profile.target_analysis.get("task_type", "classification")
+        specs = self._build_feature_specs(profile, feature_cols, task_type)
+        if not specs:
+            return None, []
+        cols = list(X_train.columns)
+        keep = [s for s in specs if not validate_specs([s], cols)]
+        self.rejected_specs = [
+            {"op": s.op, "params": s.params, "errors": validate_specs([s], cols)}
+            for s in specs if validate_specs([s], cols)
+        ]
+        if not keep:
+            return None, []
+        transformer = FeatureSpecTransformer(keep).fit(X_train, y_train)
+        # Each fitted op reports the exact columns it produces — use that rather
+        # than inferring names, so nothing is mis-attributed or missed.
+        engineered = [
+            {
+                "source_column": ",".join(
+                    str(v) for k, v in spec.params.items() if k in ("col", "a", "b", "by")
+                ),
+                "op": spec.op,
+                "new_columns": list(op.names),
+            }
+            for spec, op in zip(keep, transformer.fitted_ops_)
+        ]
+        return transformer, engineered
 
     def _apply_stateless_engineering(
         self, df: pd.DataFrame, profile: ProfileReport
