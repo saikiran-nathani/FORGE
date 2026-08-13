@@ -3,27 +3,35 @@
   "top_features": [
     {
       "feature": "logins_last_30d",
-      "mean_abs_shap": 0.2720061960394413
+      "mean_abs_shap": 0.2685275975116665
     },
     {
       "feature": "tenure_months_x_monthly_charges",
-      "mean_abs_shap": 0.06737294022778377
+      "mean_abs_shap": 0.06818326625956764
     },
     {
-      "feature": "monthly_charges_log",
-      "mean_abs_shap": 0.05706290589160329
+      "feature": "monthly_charges_log1p",
+      "mean_abs_shap": 0.057664960038904374
     },
     {
       "feature": "tenure_months_ratio_monthly_charges",
-      "mean_abs_shap": 0.04162927453386343
+      "mean_abs_shap": 0.040774795948735926
+    },
+    {
+      "feature": "tenure_months_log1p",
+      "mean_abs_shap": 0.03551031523121149
     },
     {
       "feature": "tenure_months",
-      "mean_abs_shap": 0.03443672599685526
+      "mean_abs_shap": 0.032229526022395184
     },
     {
-      "feature": "tenure_months_log",
-      "mean_abs_shap": 0.03352279930511646
+      "feature": "num_support_tickets_8",
+      "mean_abs_shap": 0.003354684757924388
+    },
+    {
+      "feature": "num_support_tickets_11",
+      "mean_abs_shap": 0.0010254291967928722
     }
   ],
   "n_samples_explained": 200

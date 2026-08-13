@@ -3,27 +3,35 @@
   "top_features": [
     {
       "feature": "logins_last_30d",
-      "mean_abs_shap": 0.2720061960394413
+      "mean_abs_shap": 0.2685275975116665
     },
     {
       "feature": "tenure_months_x_monthly_charges",
-      "mean_abs_shap": 0.06737294022778377
+      "mean_abs_shap": 0.06818326625956764
     },
     {
-      "feature": "monthly_charges_log",
-      "mean_abs_shap": 0.05706290589160329
+      "feature": "monthly_charges_log1p",
+      "mean_abs_shap": 0.057664960038904374
     },
     {
       "feature": "tenure_months_ratio_monthly_charges",
-      "mean_abs_shap": 0.04162927453386343
+      "mean_abs_shap": 0.040774795948735926
+    },
+    {
+      "feature": "tenure_months_log1p",
+      "mean_abs_shap": 0.03551031523121149
     },
     {
       "feature": "tenure_months",
-      "mean_abs_shap": 0.03443672599685526
+      "mean_abs_shap": 0.032229526022395184
     },
     {
-      "feature": "tenure_months_log",
-      "mean_abs_shap": 0.03352279930511646
+      "feature": "num_support_tickets_8",
+      "mean_abs_shap": 0.003354684757924388
+    },
+    {
+      "feature": "num_support_tickets_11",
+      "mean_abs_shap": 0.0010254291967928722
     }
   ],
   "n_samples_explained": 200,
@@ -33,27 +41,35 @@
     "explanations": [
       {
         "feature": "logins_last_30d <= -0.71",
-        "weight": -0.2956261398532866
+        "weight": -0.2982391908604137
       },
       {
         "feature": "-0.72 < tenure_months_x_monthly_charges <= -0.26",
-        "weight": -0.06099590907424844
+        "weight": -0.07638268964473935
+      },
+      {
+        "feature": "-0.44 < tenure_months_log1p <= 0.13",
+        "weight": -0.03748464578786479
       },
       {
         "feature": "-0.62 < tenure_months <= -0.06",
-        "weight": -0.03352327220106106
+        "weight": -0.026640419883103235
       },
       {
-        "feature": "-0.44 < tenure_months_log <= 0.13",
-        "weight": -0.025724328226368935
+        "feature": "num_support_tickets_11 <= 0.00",
+        "weight": -0.02007895513493769
+      },
+      {
+        "feature": "num_support_tickets_8 <= 0.00",
+        "weight": -0.016878442403928676
       },
       {
         "feature": "-0.28 < tenure_months_ratio_monthly_charges <= 0.63",
-        "weight": 0.005815092561399994
+        "weight": 0.010416775420379214
       },
       {
-        "feature": "-0.66 < monthly_charges_log <= 0.28",
-        "weight": -0.0014389824779103366
+        "feature": "-0.66 < monthly_charges_log1p <= 0.28",
+        "weight": 0.0008669984768700481
       }
     ]
   },
@@ -61,18 +77,20 @@
     "features": [
       "tenure_months",
       "logins_last_30d",
-      "tenure_months_log",
-      "monthly_charges_log",
+      "tenure_months_log1p",
+      "monthly_charges_log1p",
       "tenure_months_x_monthly_charges"
     ],
     "plot": "pdp_plots.png"
   },
   "permutation_importance": {
-    "tenure_months": 0.016893743528799555,
-    "logins_last_30d": 0.2744054498553218,
-    "tenure_months_log": 0.012817589335132284,
-    "monthly_charges_log": 0.09689561571853315,
-    "tenure_months_x_monthly_charges": 0.06503730591579615,
-    "tenure_months_ratio_monthly_charges": 0.017070358105640705
+    "tenure_months": 0.010105176976282637,
+    "logins_last_30d": 0.27110654116704425,
+    "tenure_months_log1p": 0.007760826939644083,
+    "monthly_charges_log1p": 0.09037643026212036,
+    "tenure_months_x_monthly_charges": 0.06354961813454149,
+    "tenure_months_ratio_monthly_charges": 0.016069785253989367,
+    "num_support_tickets_11": 0.0,
+    "num_support_tickets_8": 0.0
   }
 }

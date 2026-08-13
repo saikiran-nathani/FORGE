@@ -30,7 +30,7 @@
     "n_train": 1280,
     "n_test": 320,
     "selection_metric": "fbeta:2.236",
-    "cv_best_score": 0.9011773214541148,
+    "cv_best_score": 0.90076534468697,
     "test_class_counts": {
       "0": 236,
       "1": 84
@@ -43,6 +43,7 @@
     "leader": "random_forest",
     "tied_with_leader": [
       "random_forest",
+      "xgboost",
       "lightgbm",
       "catboost",
       "voting_ensemble",
@@ -51,13 +52,13 @@
     "per_model": {
       "logistic_regression": {
         "mean": 0.8287929573092565,
-        "diff_vs_leader": -0.0924665176552173,
-        "ci_lo": -0.15794293088161587,
-        "ci_hi": -0.03541344399183313,
+        "diff_vs_leader": -0.08065549874541644,
+        "ci_lo": -0.14318730188802442,
+        "ci_hi": -0.02677128296855824,
         "distinguishable_from_leader": true
       },
       "random_forest": {
-        "mean": 0.9212594749644738,
+        "mean": 0.909448456054673,
         "diff_vs_leader": 0.0,
         "ci_lo": 0.0,
         "ci_hi": 0.0,
@@ -65,37 +66,37 @@
       },
       "xgboost": {
         "mean": 0.87775595666555,
-        "diff_vs_leader": -0.04350351829892385,
-        "ci_lo": -0.09364641543669519,
-        "ci_hi": -0.004866745145031064,
-        "distinguishable_from_leader": true
+        "diff_vs_leader": -0.031692499389123,
+        "ci_lo": -0.07605267537284831,
+        "ci_hi": 0.0048358876129463504,
+        "distinguishable_from_leader": false
       },
       "lightgbm": {
-        "mean": 0.8946322968793899,
-        "diff_vs_leader": -0.026627178085083858,
-        "ci_lo": -0.06505873663070533,
-        "ci_hi": 0.0038635990559351026,
+        "mean": 0.9083667172360386,
+        "diff_vs_leader": -0.0010817388186343813,
+        "ci_lo": -0.03807149539376758,
+        "ci_hi": 0.034308847802866006,
         "distinguishable_from_leader": false
       },
       "catboost": {
-        "mean": 0.9148513933567937,
-        "diff_vs_leader": -0.006408081607680138,
-        "ci_lo": -0.03120332157429819,
-        "ci_hi": 0.010586243605233636,
+        "mean": 0.902970206430082,
+        "diff_vs_leader": -0.0064782496245909815,
+        "ci_lo": -0.030170595322270184,
+        "ci_hi": 0.010938091761687226,
         "distinguishable_from_leader": false
       },
       "voting_ensemble": {
-        "mean": 0.9166666666666667,
-        "diff_vs_leader": -0.004592808297807061,
-        "ci_lo": -0.029203787157810423,
-        "ci_hi": 0.01234195529190013,
+        "mean": 0.896414523588196,
+        "diff_vs_leader": -0.013033932466476994,
+        "ci_lo": -0.04582469759917349,
+        "ci_hi": 0.011213542433177234,
         "distinguishable_from_leader": false
       },
       "stacking_ensemble": {
-        "mean": 0.8880003599543836,
-        "diff_vs_leader": -0.03325911501009016,
-        "ci_lo": -0.07665060499865442,
-        "ci_hi": 0.0020373729938921174,
+        "mean": 0.8982038653371363,
+        "diff_vs_leader": -0.011244590717536695,
+        "ci_lo": -0.04445065114234275,
+        "ci_hi": 0.013729806599764577,
         "distinguishable_from_leader": false
       }
     },
@@ -108,7 +109,15 @@
     "metric": "fbeta:2.236",
     "skipped_models": [],
     "fastest_tied_model": "catboost",
-    "fastest_tied_latency_ms": 0.12687090202234685
+    "fastest_tied_latency_ms": 0.1303041004575789
+  },
+  "honest_cv": {
+    "status": "ok",
+    "metric": "fbeta:2.236",
+    "reported_cv": 0.90076534468697,
+    "honest_nested_cv": 0.8876141013989164,
+    "optimism": 0.013151243288053616,
+    "note": "HPO's own CV already refits feature ops, clipping and preprocessing inside every fold, so reported_cv is free of preprocessing leakage. This check re-scores the winner with no target-informed feature selection at all, so the remaining gap is an UPPER BOUND on what is left: feature selection having seen the target on all training rows, plus winner's-curse from picking the best of several tuned models. Part of the gap is also the genuine benefit of selection, so treat it as a ceiling on optimism, not a measurement of it."
   },
   "task_plan": {
     "selection_metric": "fbeta:2.236",
