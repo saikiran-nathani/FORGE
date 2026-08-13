@@ -31,69 +31,69 @@
       "f1": 0.9645390070921985
     },
     "metric": "f1",
-    "runtime_s": 132.0,
+    "runtime_s": 167.3,
     "trials": 125,
     "n_models": 16,
     "leaderboard": [
       {
         "model": "logistic_regression",
         "cv_score": 0.9877,
-        "latency_ms": 0.15
+        "latency_ms": 0.19
       },
       {
         "model": "voting_ensemble",
-        "cv_score": 0.9876,
-        "latency_ms": 0.52
+        "cv_score": 0.986,
+        "latency_ms": 0.81
       },
       {
         "model": "sgd",
-        "cv_score": 0.9859,
-        "latency_ms": 0.15
+        "cv_score": 0.9843,
+        "latency_ms": 0.16
       },
       {
         "model": "stacking_ensemble",
-        "cv_score": 0.9789,
-        "latency_ms": 1.49
-      },
-      {
-        "model": "catboost",
-        "cv_score": 0.9771,
-        "latency_ms": 0.13
+        "cv_score": 0.9825,
+        "latency_ms": 1.83
       },
       {
         "model": "lightgbm",
-        "cv_score": 0.9753,
-        "latency_ms": 0.42
+        "cv_score": 0.9772,
+        "latency_ms": 0.45
+      },
+      {
+        "model": "catboost",
+        "cv_score": 0.9754,
+        "latency_ms": 0.15
+      },
+      {
+        "model": "extra_trees",
+        "cv_score": 0.9741,
+        "latency_ms": 6.48
       },
       {
         "model": "xgboost",
         "cv_score": 0.9737,
-        "latency_ms": 0.47
+        "latency_ms": 0.52
       },
       {
         "model": "knn",
         "cv_score": 0.9725,
-        "latency_ms": 0.74
-      },
-      {
-        "model": "extra_trees",
-        "cv_score": 0.9708,
-        "latency_ms": 7.08
-      },
-      {
-        "model": "svm",
-        "cv_score": 0.9698,
-        "latency_ms": 0.29
+        "latency_ms": 0.75
       },
       {
         "model": "random_forest",
         "cv_score": 0.9698,
-        "latency_ms": 22.91
+        "latency_ms": 25.69
+      },
+      {
+        "model": "svm",
+        "cv_score": 0.9663,
+        "latency_ms": 0.32
       },
       {
         "model": "naive_bayes",
         "cv_score": 0.9547,
-        "latency_ms": 0.15
+        "latency_ms": 0.17
       },
       {
         "model": "decision_tree",
@@ -102,18 +102,18 @@
       },
       {
         "model": "mlp",
-        "cv_score": 0.9066,
-        "latency_ms": 0.18
+        "cv_score": 0.9072,
+        "latency_ms": 0.24
       },
       {
         "model": "ft_transformer",
         "cv_score": 0.7703,
-        "latency_ms": 4.03
+        "latency_ms": 4.27
       },
       {
         "model": "tab_transformer",
-        "cv_score": 0.7606,
-        "latency_ms": 4.82
+        "cv_score": 0.757,
+        "latency_ms": 4.96
       }
     ]
   },
@@ -152,69 +152,69 @@
       "log_loss": 0.12215002857485656
     },
     "metric": "f1_macro",
-    "runtime_s": 133.4,
+    "runtime_s": 132.1,
     "trials": 125,
     "n_models": 16,
     "leaderboard": [
       {
         "model": "knn",
         "cv_score": 0.9933,
-        "latency_ms": 0.42
+        "latency_ms": 0.46
       },
       {
         "model": "extra_trees",
         "cv_score": 0.986,
-        "latency_ms": 5.84
-      },
-      {
-        "model": "stacking_ensemble",
-        "cv_score": 0.986,
-        "latency_ms": 7.71
-      },
-      {
-        "model": "lightgbm",
-        "cv_score": 0.9853,
-        "latency_ms": 0.46
+        "latency_ms": 5.88
       },
       {
         "model": "naive_bayes",
         "cv_score": 0.9798,
-        "latency_ms": 0.14
+        "latency_ms": 0.15
+      },
+      {
+        "model": "voting_ensemble",
+        "cv_score": 0.9798,
+        "latency_ms": 6.56
       },
       {
         "model": "sgd",
         "cv_score": 0.9798,
-        "latency_ms": 0.14
+        "latency_ms": 0.15
       },
       {
-        "model": "voting_ensemble",
-        "cv_score": 0.9786,
-        "latency_ms": 30.2
+        "model": "lightgbm",
+        "cv_score": 0.9791,
+        "latency_ms": 0.5
+      },
+      {
+        "model": "stacking_ensemble",
+        "cv_score": 0.9736,
+        "latency_ms": 13.3
       },
       {
         "model": "logistic_regression",
         "cv_score": 0.9735,
-        "latency_ms": 0.14
+        "latency_ms": 0.15
       },
       {
         "model": "xgboost",
         "cv_score": 0.9716,
-        "latency_ms": 0.59
+        "latency_ms": 0.6
       },
       {
         "model": "catboost",
-        "cv_score": 0.9716,
-        "latency_ms": 0.14
+        "cv_score": 0.9655,
+        "latency_ms": 0.19
       },
       {
         "model": "svm",
-        "cv_score": 0.9659,
+        "cv_score": 0.9597,
         "latency_ms": 0.2
       },
       {
         "model": "random_forest",
         "cv_score": 0.9593,
-        "latency_ms": 15.49
+        "latency_ms": 15.03
       },
       {
         "model": "decision_tree",
@@ -222,19 +222,19 @@
         "latency_ms": 0.13
       },
       {
+        "model": "ft_transformer",
+        "cv_score": 0.3461,
+        "latency_ms": 1.44
+      },
+      {
         "model": "tab_transformer",
-        "cv_score": 0.3306,
-        "latency_ms": 1.96
+        "cv_score": 0.3316,
+        "latency_ms": 1.99
       },
       {
         "model": "mlp",
-        "cv_score": 0.2985,
-        "latency_ms": 0.17
-      },
-      {
-        "model": "ft_transformer",
-        "cv_score": 0.2788,
-        "latency_ms": 1.08
+        "cv_score": 0.2982,
+        "latency_ms": 0.18
       }
     ]
   },
@@ -244,14 +244,14 @@
     "n_features": 64,
     "best_model": "svm",
     "best_metrics": {
-      "accuracy": 0.98125,
-      "balanced_accuracy": 0.982312091503268,
-      "f1_macro": 0.9824791421945122,
-      "f1_weighted": 0.9812384792626728,
-      "precision_macro": 0.9830065359477125,
-      "recall_macro": 0.982312091503268,
-      "mcc": 0.9791956256540432,
-      "cohen_kappa": 0.9791530944625407,
+      "accuracy": 0.975,
+      "balanced_accuracy": 0.9760620915032681,
+      "f1_macro": 0.9760275292912863,
+      "f1_weighted": 0.9749884792626728,
+      "precision_macro": 0.9767565359477125,
+      "recall_macro": 0.9760620915032681,
+      "mcc": 0.9722897882409142,
+      "cohen_kappa": 0.9722053331017111,
       "confusion_matrix": [
         [
           15,
@@ -292,8 +292,8 @@
         [
           0,
           0,
-          0,
-          16,
+          1,
+          15,
           0,
           0,
           0,
@@ -374,93 +374,93 @@
           16
         ]
       ],
-      "roc_auc": 0.9997960792903703,
-      "log_loss": 0.15320980314077123
+      "roc_auc": 0.9997918001432655,
+      "log_loss": 0.1567435691224786
     },
     "metric": "f1_macro",
-    "runtime_s": 837.9,
+    "runtime_s": 834.5,
     "trials": 125,
     "n_models": 16,
     "leaderboard": [
       {
         "model": "svm",
-        "cv_score": 0.9859,
-        "latency_ms": 1.47
+        "cv_score": 0.9875,
+        "latency_ms": 1.48
       },
       {
         "model": "stacking_ensemble",
-        "cv_score": 0.983,
-        "latency_ms": 15.12
+        "cv_score": 0.9815,
+        "latency_ms": 13.62
       },
       {
         "model": "voting_ensemble",
-        "cv_score": 0.9829,
-        "latency_ms": 2.57
+        "cv_score": 0.9813,
+        "latency_ms": 2.2
       },
       {
         "model": "catboost",
-        "cv_score": 0.9767,
-        "latency_ms": 0.5
+        "cv_score": 0.9732,
+        "latency_ms": 0.34
       },
       {
         "model": "logistic_regression",
-        "cv_score": 0.9723,
-        "latency_ms": 0.19
+        "cv_score": 0.9674,
+        "latency_ms": 0.21
       },
       {
         "model": "extra_trees",
-        "cv_score": 0.9606,
-        "latency_ms": 9.1
+        "cv_score": 0.9589,
+        "latency_ms": 9.12
       },
       {
         "model": "knn",
-        "cv_score": 0.9588,
-        "latency_ms": 1.21
+        "cv_score": 0.9573,
+        "latency_ms": 1.13
       },
       {
         "model": "lightgbm",
-        "cv_score": 0.9543,
-        "latency_ms": 0.63
+        "cv_score": 0.9546,
+        "latency_ms": 0.89
       },
       {
         "model": "sgd",
-        "cv_score": 0.9514,
+        "cv_score": 0.9521,
         "latency_ms": 0.2
       },
       {
         "model": "random_forest",
-        "cv_score": 0.9507,
-        "latency_ms": 25.32
+        "cv_score": 0.9497,
+        "latency_ms": 30.23
       },
       {
         "model": "xgboost",
-        "cv_score": 0.9387,
-        "latency_ms": 1.64
+        "cv_score": 0.942,
+        "latency_ms": 1.45
       },
       {
         "model": "naive_bayes",
-        "cv_score": 0.8838,
-        "latency_ms": 0.28
+        "cv_score": 0.8972,
+        "latency_ms": 0.3
       },
       {
         "model": "decision_tree",
-        "cv_score": 0.7525,
-        "latency_ms": 0.18
+        "cv_score": 0.7472,
+        "latency_ms": 0.19
       },
       {
         "model": "mlp",
-        "cv_score": 0.0671,
-        "latency_ms": 0.06
-      },
-      {
-        "model": "tab_transformer",
-        "cv_score": 0.0345,
-        "latency_ms": 6.64
+        "cv_score": 0.1214,
+        "latency_ms": 0.19
       },
       {
         "model": "ft_transformer",
-        "cv_score": 0.023,
-        "latency_ms": 13.21
+        "cv_score": 0.051,
+        "latency_ms": 18.63
+      },
+      {
+        "model": "tab_transformer",
+        "cv_score": 0.0238,
+        "latency_ms": 13.98
       }
     ]
   },
@@ -478,84 +478,84 @@
       "max_error": 145.99383911677796
     },
     "metric": "rmse",
-    "runtime_s": 247.7,
+    "runtime_s": 249.6,
     "trials": 135,
     "n_models": 15,
     "leaderboard": [
       {
         "model": "lasso",
-        "cv_score": 55.7369,
-        "latency_ms": 0.13
+        "cv_score": 55.7497,
+        "latency_ms": 0.14
       },
       {
         "model": "elastic_net",
-        "cv_score": 55.7604,
+        "cv_score": 55.7768,
         "latency_ms": 0.13
       },
       {
         "model": "ridge",
-        "cv_score": 55.7925,
+        "cv_score": 55.8054,
         "latency_ms": 0.13
       },
       {
         "model": "sgd",
-        "cv_score": 55.8374,
+        "cv_score": 55.8387,
         "latency_ms": 0.13
       },
       {
         "model": "xgboost",
         "cv_score": 57.0751,
-        "latency_ms": 0.55
+        "latency_ms": 0.53
       },
       {
         "model": "catboost",
-        "cv_score": 57.2565,
-        "latency_ms": 0.15
-      },
-      {
-        "model": "random_forest",
-        "cv_score": 57.3612,
-        "latency_ms": 13.61
-      },
-      {
-        "model": "extra_trees",
-        "cv_score": 57.4118,
-        "latency_ms": 6.36
-      },
-      {
-        "model": "knn",
-        "cv_score": 57.7107,
-        "latency_ms": 0.48
-      },
-      {
-        "model": "lightgbm",
-        "cv_score": 58.2811,
-        "latency_ms": 0.51
-      },
-      {
-        "model": "mlp",
-        "cv_score": 58.8452,
-        "latency_ms": 0.2
-      },
-      {
-        "model": "svm",
-        "cv_score": 62.2767,
-        "latency_ms": 0.86
-      },
-      {
-        "model": "decision_tree",
-        "cv_score": 66.3456,
+        "cv_score": 57.2465,
         "latency_ms": 0.14
       },
       {
+        "model": "random_forest",
+        "cv_score": 57.3487,
+        "latency_ms": 13.72
+      },
+      {
+        "model": "extra_trees",
+        "cv_score": 57.5228,
+        "latency_ms": 6.18
+      },
+      {
+        "model": "knn",
+        "cv_score": 57.7249,
+        "latency_ms": 0.51
+      },
+      {
+        "model": "lightgbm",
+        "cv_score": 58.3693,
+        "latency_ms": 0.49
+      },
+      {
+        "model": "mlp",
+        "cv_score": 59.0852,
+        "latency_ms": 0.15
+      },
+      {
+        "model": "svm",
+        "cv_score": 62.2419,
+        "latency_ms": 0.91
+      },
+      {
+        "model": "decision_tree",
+        "cv_score": 66.2747,
+        "latency_ms": 0.13
+      },
+      {
         "model": "ft_transformer",
-        "cv_score": 119.7768,
-        "latency_ms": 4.58
+        "cv_score": 119.7724,
+        "latency_ms": 4.55
       },
       {
         "model": "tab_transformer",
-        "cv_score": 143.556,
-        "latency_ms": 3.44
+        "cv_score": 143.5783,
+        "latency_ms": 3.49
       }
     ]
   },
@@ -573,79 +573,79 @@
       "max_error": 103.37158830707708
     },
     "metric": "rmse",
-    "runtime_s": 507.0,
+    "runtime_s": 501.7,
     "trials": 135,
     "n_models": 15,
     "leaderboard": [
       {
         "model": "lasso",
-        "cv_score": 30.571,
+        "cv_score": 30.7307,
         "latency_ms": 0.14
       },
       {
         "model": "elastic_net",
-        "cv_score": 30.573,
+        "cv_score": 30.7326,
         "latency_ms": 0.14
       },
       {
         "model": "ridge",
-        "cv_score": 30.5754,
+        "cv_score": 30.7342,
         "latency_ms": 0.14
       },
       {
         "model": "sgd",
-        "cv_score": 30.6058,
+        "cv_score": 30.7675,
         "latency_ms": 0.14
       },
       {
         "model": "mlp",
-        "cv_score": 35.3943,
+        "cv_score": 35.749,
         "latency_ms": 0.15
       },
       {
         "model": "catboost",
-        "cv_score": 40.4752,
-        "latency_ms": 0.21
+        "cv_score": 40.0764,
+        "latency_ms": 0.18
       },
       {
         "model": "svm",
-        "cv_score": 52.0864,
-        "latency_ms": 1.6
+        "cv_score": 52.1812,
+        "latency_ms": 1.53
       },
       {
         "model": "lightgbm",
-        "cv_score": 54.314,
-        "latency_ms": 0.4
+        "cv_score": 55.0427,
+        "latency_ms": 0.37
       },
       {
         "model": "xgboost",
         "cv_score": 57.2734,
-        "latency_ms": 0.86
+        "latency_ms": 0.81
       },
       {
         "model": "ft_transformer",
-        "cv_score": 84.1091,
-        "latency_ms": 7.0
+        "cv_score": 84.1859,
+        "latency_ms": 7.59
       },
       {
         "model": "knn",
-        "cv_score": 89.0882,
-        "latency_ms": 3.51
+        "cv_score": 88.9663,
+        "latency_ms": 3.79
       },
       {
         "model": "random_forest",
-        "cv_score": 95.5571,
-        "latency_ms": 15.86
+        "cv_score": 95.5588,
+        "latency_ms": 13.81
       },
       {
         "model": "extra_trees",
-        "cv_score": 99.9756,
-        "latency_ms": 6.39
+        "cv_score": 100.1855,
+        "latency_ms": 6.28
       },
       {
         "model": "tab_transformer",
-        "cv_score": 124.3324,
-        "latency_ms": 5.14
+        "cv_score": 123.8514,
+        "latency_ms": 5.12
       },
       {
         "model": "decision_tree",
@@ -658,117 +658,117 @@
     "task_type": "binary_classification",
     "n_rows": 800,
     "n_features": 8,
-    "best_model": "catboost",
+    "best_model": "lightgbm",
     "best_metrics": {
-      "accuracy": 0.95,
-      "balanced_accuracy": 0.9143311468892865,
-      "f1_macro": 0.9333333333333333,
-      "f1_weighted": 0.9487500000000001,
-      "precision_macro": 0.958031201933641,
-      "recall_macro": 0.9143311468892865,
-      "mcc": 0.8712671076271473,
-      "cohen_kappa": 0.866916198793928,
+      "accuracy": 0.95625,
+      "balanced_accuracy": 0.9406678592725104,
+      "f1_macro": 0.9439299123904881,
+      "f1_weighted": 0.9560857321652065,
+      "precision_macro": 0.9473365617433414,
+      "recall_macro": 0.9406678592725104,
+      "mcc": 0.8879793804762889,
+      "cohen_kappa": 0.8878654385262315,
       "confusion_matrix": [
         [
-          116,
-          1
+          114,
+          3
         ],
         [
-          7,
-          36
+          4,
+          39
         ]
       ],
-      "roc_auc": 0.9910554561717353,
-      "pr_auc": 0.9794735761423428,
-      "brier_score": 0.036209856030498005,
-      "log_loss": 0.12875701044792803,
-      "ece": 0.04906377018319014,
-      "f1": 0.9
+      "roc_auc": 0.9894653150467104,
+      "pr_auc": 0.9733815973388583,
+      "brier_score": 0.036235371080022796,
+      "log_loss": 0.11879548034024176,
+      "ece": 0.03293366002292499,
+      "f1": 0.9176470588235294
     },
     "metric": "f1",
-    "runtime_s": 175.1,
+    "runtime_s": 194.7,
     "trials": 125,
     "n_models": 16,
     "leaderboard": [
       {
-        "model": "catboost",
-        "cv_score": 0.8989,
-        "latency_ms": 0.14
+        "model": "lightgbm",
+        "cv_score": 0.91,
+        "latency_ms": 0.53
       },
       {
         "model": "voting_ensemble",
-        "cv_score": 0.8989,
-        "latency_ms": 9.62
-      },
-      {
-        "model": "lightgbm",
-        "cv_score": 0.8974,
-        "latency_ms": 0.46
+        "cv_score": 0.9003,
+        "latency_ms": 9.57
       },
       {
         "model": "stacking_ensemble",
-        "cv_score": 0.8931,
-        "latency_ms": 49.96
+        "cv_score": 0.8988,
+        "latency_ms": 46.91
+      },
+      {
+        "model": "catboost",
+        "cv_score": 0.8986,
+        "latency_ms": 0.15
       },
       {
         "model": "extra_trees",
-        "cv_score": 0.8859,
-        "latency_ms": 9.24
+        "cv_score": 0.8914,
+        "latency_ms": 8.62
       },
       {
         "model": "random_forest",
-        "cv_score": 0.8691,
-        "latency_ms": 26.95
+        "cv_score": 0.8695,
+        "latency_ms": 30.93
       },
       {
         "model": "xgboost",
-        "cv_score": 0.865,
-        "latency_ms": 0.52
+        "cv_score": 0.8682,
+        "latency_ms": 0.5
       },
       {
         "model": "knn",
-        "cv_score": 0.8581,
-        "latency_ms": 0.45
+        "cv_score": 0.8542,
+        "latency_ms": 0.42
       },
       {
         "model": "svm",
-        "cv_score": 0.8426,
-        "latency_ms": 0.35
-      },
-      {
-        "model": "logistic_regression",
-        "cv_score": 0.8146,
-        "latency_ms": 0.15
+        "cv_score": 0.847,
+        "latency_ms": 0.34
       },
       {
         "model": "sgd",
-        "cv_score": 0.8049,
-        "latency_ms": 0.15
-      },
-      {
-        "model": "decision_tree",
-        "cv_score": 0.7845,
+        "cv_score": 0.8095,
         "latency_ms": 0.14
       },
       {
+        "model": "logistic_regression",
+        "cv_score": 0.8033,
+        "latency_ms": 0.14
+      },
+      {
+        "model": "decision_tree",
+        "cv_score": 0.7811,
+        "latency_ms": 0.13
+      },
+      {
         "model": "naive_bayes",
-        "cv_score": 0.6809,
+        "cv_score": 0.698,
         "latency_ms": 0.15
       },
       {
         "model": "ft_transformer",
-        "cv_score": 0.4217,
-        "latency_ms": 2.24
+        "cv_score": 0.4177,
+        "latency_ms": 5.95
       },
       {
         "model": "mlp",
-        "cv_score": 0.3579,
-        "latency_ms": 0.14
+        "cv_score": 0.3568,
+        "latency_ms": 0.11
       },
       {
         "model": "tab_transformer",
-        "cv_score": 0.3377,
-        "latency_ms": 2.15
+        "cv_score": 0.3492,
+        "latency_ms": 1.93
       }
     ]
   }
