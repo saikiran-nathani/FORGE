@@ -180,6 +180,7 @@ class ExperimentStore:
                 "eval_context": result.eval_context,
                 "warnings": result.warnings,
                 "significance": result.significance,
+                "task_plan": result.task_plan,
                 "llm_report": result.llm_report_path,
                 "artifact_dir": str(result.output_dir),
                 "eda_report": str(result.output_dir / "eda_report.html"),

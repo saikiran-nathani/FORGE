@@ -75,6 +75,7 @@ class PipelineResult:
     eval_context: dict[str, Any]
     warnings: list[str]
     significance: dict[str, Any]
+    task_plan: dict[str, Any]
 
 
 class ForgePipeline:
@@ -112,8 +113,17 @@ class ForgePipeline:
         profiler = StatisticalProfiler(config.target_column, config.task_description)
         profile = profiler.profile(df)
         console.print(f"  Quality score: {profile.quality_score}/100")
-        console.print(f"  Recommended metric: {profile.recommended_metric}")
-        self._progress("profiling", f"Quality {profile.quality_score}/100 · metric {profile.recommended_metric}")
+        console.print(f"  Recommended metric (from data): {profile.recommended_metric}")
+
+        # What the DATA cannot know — cost asymmetry, capacity limits, latency
+        # budget, interpretability needs — comes from the task description. Parsed
+        # deterministically (works with no API key); every field carries source +
+        # rationale so the UI can show the parse for confirmation rather than
+        # letting FORGE decide silently.
+        task_plan = self._plan_from_description(config.task_description, profile)
+        selection_metric = task_plan["selection_metric"]
+        console.print(f"  Selection metric: {selection_metric} — {task_plan['metric_rationale']}")
+        self._progress("profiling", f"Quality {profile.quality_score}/100 · metric {selection_metric}")
 
         semantic = SemanticProfiler(self.llm).profile(
             profile, config.task_description, config.target_column
@@ -180,7 +190,7 @@ class ForgePipeline:
                 trials = dl_trials if is_dl else config.hpo_trials_per_model
                 opt = OptunaOptimizer(
                     task_type=task_type,
-                    metric_name=profile.recommended_metric,
+                    metric_name=selection_metric,
                     n_trials=trials,
                     cv_folds=config.cv_folds,
                     random_state=config.random_state,
@@ -213,7 +223,7 @@ class ForgePipeline:
 
             if config.enable_ensembles and len(model_results) >= 3:
                 ensemble_builder = EnsembleBuilder(
-                    task_type, profile.recommended_metric, config.random_state, config.cv_folds
+                    task_type, selection_metric, config.random_state, config.cv_folds
                 )
                 for build_fn, label in [
                     (ensemble_builder.build_voting, "voting"),
@@ -240,15 +250,15 @@ class ForgePipeline:
                     model_results.append(ModelResult(
                         model_name=name, best_params={}, cv_score=cv_score,
                         cv_score_std=0.0, training_time=0.0, inference_latency_ms=latency_ms,
-                        fitted_model=model, metric_name=profile.recommended_metric,
+                        fitted_model=model, metric_name=selection_metric,
                     ))
 
-            best = self._pick_best(model_results, profile.recommended_metric)
+            best = self._pick_best(model_results, selection_metric)
 
         pareto = ParetoAnalyzer().to_dict(
             ParetoAnalyzer().compute(
                 self._serialize_results(model_results),
-                maximize_score=profile.recommended_metric != "rmse",
+                maximize_score=selection_metric != "rmse",
             )
         )
         console.print(f"  Pareto-optimal models: {sum(1 for p in pareto if p['is_pareto_optimal'])}")
@@ -280,7 +290,7 @@ class ForgePipeline:
         # Which leaderboard gaps are real vs noise? Reported, never used to pick.
         self._progress("evaluation", "Testing which leaderboard gaps are statistically real…")
         significance = self._significance_analysis(
-            model_results, features, profile.recommended_metric
+            model_results, features, selection_metric
         )
         if significance.get("status") == "ok":
             tied = significance["tied_with_leader"]
@@ -379,7 +389,7 @@ class ForgePipeline:
             artifact_dir, profile, semantic, test_metrics, engineered_features,
             selection_report, pareto,
             baseline_metrics=baseline_metrics, warnings=warnings, eval_context=eval_context,
-            significance=significance,
+            significance=significance, task_plan=task_plan,
         )
 
         from forge.deployment.model_card_generator import ModelCardGenerator
@@ -407,7 +417,82 @@ class ForgePipeline:
             eval_context=eval_context,
             warnings=warnings,
             significance=significance,
+            task_plan=task_plan,
         )
+
+    # Metrics the HPO layer can actually optimize (see optuna_optimizer.sklearn_scoring).
+    _OPTIMIZABLE_METRICS = {"accuracy", "f1", "f1_macro", "roc_auc", "rmse"}
+
+    def _plan_from_description(self, task_description: str, profile) -> dict[str, Any]:
+        """Turn the plain-language task description into concrete pipeline choices.
+
+        The data decides task type and imbalance; only language can state cost
+        asymmetry, a capacity limit, a latency budget or an interpretability
+        requirement. This reads those and picks the selection metric accordingly.
+
+        Nothing here is hidden: the parsed spec (every field with its source and
+        rationale), the chosen metric and its rationale, and any recommendation
+        that could NOT be optimized directly are all returned for display, so the
+        user can confirm or override rather than being silently steered.
+        """
+        from forge.planning.task_spec import (
+            cost_sensitive_threshold,
+            parse_task_description,
+            recommend_metric,
+        )
+
+        data_metric = profile.recommended_metric
+        target = profile.target_analysis or {}
+        try:
+            spec = parse_task_description(task_description, llm=self.llm if self.llm.available else None)
+            data_facts = {
+                "task_type": target.get("task_type"),
+                "is_binary": bool(target.get("is_binary", False)),
+                "imbalance_ratio": target.get("class_imbalance_ratio"),
+                "n_rows": profile.n_rows,
+            }
+            wanted, rationale = recommend_metric(spec, data_facts)
+            threshold = cost_sensitive_threshold(spec.cost_ratio.value)
+        except Exception as exc:  # never let planning break a training run
+            console.print(f"  [yellow]Task-spec parsing failed ({exc}); using the data-driven metric.[/yellow]")
+            return {
+                "selection_metric": data_metric,
+                "metric_rationale": "task description could not be parsed; metric derived from the data alone",
+                "task_spec": {},
+                "data_metric": data_metric,
+                "requested_metric": None,
+                "unoptimizable_reason": None,
+                "decision_threshold": 0.5,
+            }
+
+        if wanted == "fbeta":
+            # beta = sqrt(cost_fn / cost_fp): the Fbeta that weights recall in
+            # proportion to how much worse a miss is than a false alarm.
+            costs = spec.cost_ratio.value or {}
+            fp, fn = float(costs.get("fp", 1.0) or 1.0), float(costs.get("fn", 1.0) or 1.0)
+            beta = float(np.sqrt(fn / fp)) if fp > 0 else 1.0
+            selection_metric, unoptimizable = f"fbeta:{beta:.4g}", None
+        elif wanted in self._OPTIMIZABLE_METRICS:
+            selection_metric, unoptimizable = wanted, None
+        else:
+            # e.g. precision_at_k / fbeta: report the recommendation honestly
+            # instead of pretending we optimized it.
+            selection_metric = data_metric
+            unoptimizable = (
+                f"'{wanted}' fits your stated goal but is not one of the metrics HPO can "
+                f"optimize directly, so models were selected on '{data_metric}'"
+            )
+            rationale = f"{rationale} (reported only — see note)"
+
+        return {
+            "selection_metric": selection_metric,
+            "metric_rationale": rationale,
+            "task_spec": spec.to_dict(),
+            "data_metric": data_metric,
+            "requested_metric": wanted,
+            "unoptimizable_reason": unoptimizable,
+            "decision_threshold": threshold,
+        }
 
     def _significance_analysis(self, model_results, features, metric_name: str) -> dict[str, Any]:
         """Which leaderboard differences are real, and which are sampling noise?
@@ -423,7 +508,9 @@ class ForgePipeline:
         {"status": "unavailable", "reason": ...} so the UI can say WHY rather
         than silently showing nothing.
         """
-        from sklearn.metrics import accuracy_score, f1_score, mean_squared_error, roc_auc_score
+        from sklearn.metrics import (
+            accuracy_score, f1_score, fbeta_score, mean_squared_error, roc_auc_score,
+        )
 
         from forge.evaluation.significance import indistinguishable_set_from_predictions
 
@@ -434,6 +521,12 @@ class ForgePipeline:
             "roc_auc": lambda a, b: roc_auc_score(a, b),
             "rmse": lambda a, b: float(np.sqrt(mean_squared_error(a, b))),
         }
+        # Cost-weighted Fbeta carries its beta in the name (see sklearn_scoring).
+        if isinstance(metric_name, str) and metric_name.startswith("fbeta:"):
+            _beta = float(metric_name.split(":", 1)[1])
+            metric_fns[metric_name] = (
+                lambda a, b, _b=_beta: fbeta_score(a, b, beta=_b, zero_division=0)
+            )
         if metric_name not in metric_fns:
             return {"status": "unavailable", "reason": f"no bootstrap metric for '{metric_name}'"}
         if len(model_results) < 2:
@@ -586,7 +679,8 @@ class ForgePipeline:
         return registry
 
     def _save_artifacts(self, artifact_dir, profile, semantic, metrics, engineered_features, selection, pareto,
-                        baseline_metrics=None, warnings=None, eval_context=None, significance=None):
+                        baseline_metrics=None, warnings=None, eval_context=None, significance=None,
+                        task_plan=None):
         # Persist the honest reference numbers so the model card (and anything else
         # reading from disk) can show the baseline comparison + warnings instead of
         # claiming "No limitations." These live only in memory otherwise.
@@ -596,6 +690,7 @@ class ForgePipeline:
                 "warnings": warnings or [],
                 "eval_context": eval_context or {},
                 "significance": significance or {},
+                "task_plan": task_plan or {},
             }, f, indent=2)
         with open(artifact_dir / "profile.json", "w") as f:
             json.dump(profile.to_dict(), f, indent=2)

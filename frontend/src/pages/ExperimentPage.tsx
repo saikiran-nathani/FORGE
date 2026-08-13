@@ -64,6 +64,21 @@ export default function ExperimentPage() {
   const result = exp.result || {};
   const models = (result.model_results as Array<{ model_name: string; cv_score: number }>) || [];
   const metrics = (result.best_metrics as Record<string, number>) || {};
+  type SpecField = { value: unknown; source?: string; rationale?: string };
+  const plan = (result.task_plan as {
+    selection_metric?: string; metric_rationale?: string; data_metric?: string;
+    requested_metric?: string; unoptimizable_reason?: string | null;
+    decision_threshold?: number; task_spec?: Record<string, SpecField>;
+  }) || {};
+  const specFields: Array<[string, SpecField]> = Object.entries(plan.task_spec || {})
+    .filter(([, f]) => f && typeof f === 'object' && 'value' in f)
+    .filter(([, f]) => f.source === 'stated');
+  const fmtSpec = (v: unknown) =>
+    v === null || v === undefined ? '—'
+      : Array.isArray(v) ? (v.length ? v.join(', ') : '—')
+      : typeof v === 'object' ? Object.entries(v as Record<string, unknown>).map(([k, x]) => `${k}:${x}`).join(' / ')
+      : String(v);
+
   type ParetoRow = {
     model_name: string; cv_score: number; latency_ms: number;
     is_pareto_optimal: boolean; tied_with_leader?: boolean;
@@ -262,6 +277,71 @@ export default function ExperimentPage() {
               ) : (
                 <p className="text-sm text-forge-steel/70">
                   SHAP explanations unavailable for this run{shap.shap_error ? ` — ${shap.shap_error}` : ''}.
+                </p>
+              )}
+            </div>
+          )}
+
+          {plan.selection_metric && (
+            <div className="card">
+              <h2 className="font-display text-lg font-semibold mb-1 text-forge-hot">
+                How your description shaped the run
+              </h2>
+              <p className="text-sm text-forge-steel/80 mb-4">
+                The data decides the task type and imbalance. Only your words can state what an
+                error <em>costs</em> — so FORGE reads them, shows you what it understood, and lets
+                you correct it.
+              </p>
+              <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm mb-3">
+                <span>
+                  <span className="kicker text-forge-steel/70">metric optimized</span>{' '}
+                  <span className="font-mono text-forge-hot">{plan.selection_metric}</span>
+                </span>
+                {plan.data_metric && plan.data_metric !== plan.selection_metric && (
+                  <span>
+                    <span className="kicker text-forge-steel/70">from data alone</span>{' '}
+                    <span className="font-mono text-forge-steel/70">{plan.data_metric}</span>
+                  </span>
+                )}
+                {typeof plan.decision_threshold === 'number' && (
+                  <span>
+                    <span className="kicker text-forge-steel/70">decision threshold</span>{' '}
+                    <span className="font-mono text-forge-hot">{plan.decision_threshold.toFixed(3)}</span>
+                    {plan.decision_threshold !== 0.5 && (
+                      <span className="text-forge-steel/60"> (cost-weighted, not 0.5)</span>
+                    )}
+                  </span>
+                )}
+              </div>
+              {plan.metric_rationale && (
+                <p className="text-sm text-forge-steel/80 mb-3">{plan.metric_rationale}</p>
+              )}
+              {plan.unoptimizable_reason && (
+                <p className="text-sm text-forge-amber/90 mb-3">Note: {plan.unoptimizable_reason}.</p>
+              )}
+              {specFields.length > 0 ? (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="kicker text-forge-steel/70 border-b border-forge-line">
+                      <th className="text-left py-2 font-normal">Read from your description</th>
+                      <th className="text-left py-2 font-normal">Value</th>
+                      <th className="text-left py-2 font-normal">Why</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {specFields.map(([name, f]) => (
+                      <tr key={name} className="border-b border-forge-line/60 align-top">
+                        <td className="py-2.5 font-mono text-xs">{name}</td>
+                        <td className="py-2.5 font-mono text-forge-hot">{fmtSpec(f.value)}</td>
+                        <td className="py-2.5 text-forge-steel/70 text-xs">{f.rationale}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-sm text-forge-steel/60">
+                  Nothing specific was stated in the description, so every choice above came from the
+                  data and documented defaults.
                 </p>
               )}
             </div>

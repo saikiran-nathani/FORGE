@@ -23,13 +23,23 @@ _SCORING_MAP = {
 }
 
 
-def sklearn_scoring(metric_name: str) -> str:
-    """Map a FORGE metric name to an sklearn scoring string.
+def sklearn_scoring(metric_name: str):
+    """Map a FORGE metric name to an sklearn scoring string or scorer.
 
     Shared by OptunaOptimizer and EnsembleBuilder so base-model and ensemble
     CV scores are always the SAME metric (otherwise the leaderboard compares,
     e.g., an ensemble's f1_macro against base models' roc_auc).
+
+    Supports "fbeta:<beta>" (e.g. "fbeta:3.16"), which the task-description
+    planner emits when the user states an asymmetric error cost: beta > 1
+    weights recall, beta < 1 weights precision. Returned as a callable scorer
+    because beta is per-run and cannot be expressed as a fixed sklearn string.
     """
+    if isinstance(metric_name, str) and metric_name.startswith("fbeta:"):
+        from sklearn.metrics import fbeta_score, make_scorer
+
+        beta = float(metric_name.split(":", 1)[1])
+        return make_scorer(fbeta_score, beta=beta, zero_division=0)
     return _SCORING_MAP.get(metric_name, "accuracy")
 
 
