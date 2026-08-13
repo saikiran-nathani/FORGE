@@ -4,7 +4,7 @@
       "index": 54,
       "true_label": 1,
       "predicted_label": 0,
-      "loss": 5.867478081434524,
+      "loss": 3.8848632370777945,
       "feature_values": {
         "tenure_months": -0.4496083408359722,
         "logins_last_30d": -1.5111131635195214,
@@ -13,43 +13,13 @@
         "tenure_months_x_monthly_charges": 0.05625901433711922,
         "tenure_months_ratio_monthly_charges": -0.6818215608169845
       },
-      "probability": 0.997169998624924
-    },
-    {
-      "index": 86,
-      "true_label": 1,
-      "predicted_label": 0,
-      "loss": 4.991290237070624,
-      "feature_values": {
-        "tenure_months": -0.915819022893357,
-        "logins_last_30d": 0.09722264299122599,
-        "tenure_months_log": -0.7940535808096998,
-        "monthly_charges_log": 0.6465730884372828,
-        "tenure_months_x_monthly_charges": -0.5386310917743958,
-        "tenure_months_ratio_monthly_charges": -0.8750794919900494
-      },
-      "probability": 0.9932031107660884
-    },
-    {
-      "index": 60,
-      "true_label": 1,
-      "predicted_label": 0,
-      "loss": 3.524506973056465,
-      "feature_values": {
-        "tenure_months": -0.4487100543580195,
-        "logins_last_30d": 0.09722264299122599,
-        "tenure_months_log": -0.24918249727800523,
-        "monthly_charges_log": 0.5873569040800107,
-        "tenure_months_x_monthly_charges": -0.09702872324409136,
-        "tenure_months_ratio_monthly_charges": -0.6019740691877432
-      },
-      "probability": 0.9705336685162282
+      "probability": 0.97944936086529
     },
     {
       "index": 307,
       "true_label": 0,
       "predicted_label": 1,
-      "loss": 3.0213291330779204,
+      "loss": 2.2357588375884885,
       "feature_values": {
         "tenure_months": 0.386696370137872,
         "logins_last_30d": 1.5045164736881298,
@@ -58,103 +28,28 @@
         "tenure_months_x_monthly_charges": 0.9329024626613728,
         "tenure_months_ratio_monthly_charges": -0.23908778295809202
       },
-      "probability": 0.9512636018646585
+      "probability": 0.8930890289996019
     },
     {
-      "index": 110,
+      "index": 60,
       "true_label": 1,
       "predicted_label": 0,
-      "loss": 2.9563329746428066,
+      "loss": 2.231643444729717,
       "feature_values": {
-        "tenure_months": 0.7190623669803238,
-        "logins_last_30d": -0.8074662481710694,
-        "tenure_months_log": 0.7399698257943756,
-        "monthly_charges_log": -0.5129651694426931,
-        "tenure_months_x_monthly_charges": 0.22046145485944102,
-        "tenure_months_ratio_monthly_charges": 0.6708296294436554
+        "tenure_months": -0.4487100543580195,
+        "logins_last_30d": 0.09722264299122599,
+        "tenure_months_log": -0.24918249727800523,
+        "monthly_charges_log": 0.5873569040800107,
+        "tenure_months_x_monthly_charges": -0.09702872324409136,
+        "tenure_months_ratio_monthly_charges": -0.6019740691877432
       },
-      "probability": 0.947990712711325
-    },
-    {
-      "index": 145,
-      "true_label": 1,
-      "predicted_label": 0,
-      "loss": 2.8305984554248536,
-      "feature_values": {
-        "tenure_months": -0.22683329430373436,
-        "logins_last_30d": 0.2982646188050694,
-        "tenure_months_log": -0.0276912656484735,
-        "monthly_charges_log": 0.5975199704187468,
-        "tenure_months_x_monthly_charges": 0.13246730195779371,
-        "tenure_months_ratio_monthly_charges": -0.4829810982930831
-      },
-      "probability": 0.9410224523273804
-    },
-    {
-      "index": 133,
-      "true_label": 0,
-      "predicted_label": 1,
-      "loss": 2.097976333214237,
-      "feature_values": {
-        "tenure_months": 0.6471994487441177,
-        "logins_last_30d": 0.3987856067119911,
-        "tenure_months_log": 0.6894305503498269,
-        "monthly_charges_log": -0.8117031573698354,
-        "tenure_months_x_monthly_charges": -0.023003681347310224,
-        "tenure_months_ratio_monthly_charges": 0.8180826048146029
-      },
-      "probability": 0.8772955098277818
-    },
-    {
-      "index": 36,
-      "true_label": 0,
-      "predicted_label": 1,
-      "loss": 1.7080718423227264,
-      "feature_values": {
-        "tenure_months": -0.09837832795651662,
-        "logins_last_30d": 1.4039954857812083,
-        "tenure_months_log": 0.09189065211553303,
-        "monthly_charges_log": -0.9909651318004306,
-        "tenure_months_x_monthly_charges": -0.6253783295531126,
-        "tenure_months_ratio_monthly_charges": 0.323392749970735
-      },
-      "probability": 0.8187851331893927
-    },
-    {
-      "index": 89,
-      "true_label": 0,
-      "predicted_label": 1,
-      "loss": 1.6564434970445399,
-      "feature_values": {
-        "tenure_months": -0.8197023697524318,
-        "logins_last_30d": 0.7003485704327562,
-        "tenure_months_log": -0.6715287526471763,
-        "monthly_charges_log": 0.9429080519786693,
-        "tenure_months_x_monthly_charges": -0.2873975283225764,
-        "tenure_months_ratio_monthly_charges": -0.898372453365313
-      },
-      "probability": 0.8091835861202383
-    },
-    {
-      "index": 119,
-      "true_label": 1,
-      "predicted_label": 0,
-      "loss": 1.45708400037762,
-      "feature_values": {
-        "tenure_months": -0.10286976034627954,
-        "logins_last_30d": 0.4993065946189128,
-        "tenure_months_log": 0.08780711593036518,
-        "monthly_charges_log": 0.5725265438010279,
-        "tenure_months_x_monthly_charges": 0.24041928930998913,
-        "tenure_months_ratio_monthly_charges": -0.4053465511226404
-      },
-      "probability": 0.7670855360616448
+      "probability": 0.8926481417631857
     },
     {
       "index": 59,
       "true_label": 0,
       "predicted_label": 1,
-      "loss": 1.4455438326940684,
+      "loss": 1.9246813749571003,
       "feature_values": {
         "tenure_months": -1.267947322250765,
         "logins_last_30d": 0.7003485704327562,
@@ -163,43 +58,73 @@
         "tenure_months_x_monthly_charges": -0.8054779026110529,
         "tenure_months_ratio_monthly_charges": -1.112999813269905
       },
-      "probability": 0.7643820950129622
+      "probability": 0.8540777560689066
     },
     {
-      "index": 62,
-      "true_label": 0,
-      "predicted_label": 1,
-      "loss": 1.3833007007502336,
-      "feature_values": {
-        "tenure_months": -0.9095310175476891,
-        "logins_last_30d": 0.2982646188050694,
-        "tenure_months_log": -0.7858465624342501,
-        "monthly_charges_log": 0.7552785679487235,
-        "tenure_months_x_monthly_charges": -0.4800237924791508,
-        "tenure_months_ratio_monthly_charges": -0.8987077671660545
-      },
-      "probability": 0.7492504635385645
-    },
-    {
-      "index": 193,
+      "index": 110,
       "true_label": 1,
       "predicted_label": 0,
-      "loss": 1.230785710181564,
+      "loss": 1.8353052969064794,
       "feature_values": {
-        "tenure_months": -0.30049278549584524,
-        "logins_last_30d": 0.800869558339678,
-        "tenure_months_log": -0.09901054083895845,
-        "monthly_charges_log": 0.615471103089981,
-        "tenure_months_x_monthly_charges": 0.06955432039485396,
-        "tenure_months_ratio_monthly_charges": -0.529721019318304
+        "tenure_months": 0.7190623669803238,
+        "logins_last_30d": -0.8074662481710694,
+        "tenure_months_log": 0.7399698257943756,
+        "monthly_charges_log": -0.5129651694426931,
+        "tenure_months_x_monthly_charges": 0.22046145485944102,
+        "tenure_months_ratio_monthly_charges": 0.6708296294436554
       },
-      "probability": 0.7079369893750234
+      "probability": 0.8404352203024772
+    },
+    {
+      "index": 89,
+      "true_label": 0,
+      "predicted_label": 1,
+      "loss": 1.683323978253729,
+      "feature_values": {
+        "tenure_months": -0.8197023697524318,
+        "logins_last_30d": 0.7003485704327562,
+        "tenure_months_log": -0.6715287526471763,
+        "monthly_charges_log": 0.9429080519786693,
+        "tenure_months_x_monthly_charges": -0.2873975283225764,
+        "tenure_months_ratio_monthly_charges": -0.898372453365313
+      },
+      "probability": 0.814244498536534
+    },
+    {
+      "index": 133,
+      "true_label": 0,
+      "predicted_label": 1,
+      "loss": 1.6454697870151267,
+      "feature_values": {
+        "tenure_months": 0.6471994487441177,
+        "logins_last_30d": 0.3987856067119911,
+        "tenure_months_log": 0.6894305503498269,
+        "monthly_charges_log": -0.8117031573698354,
+        "tenure_months_x_monthly_charges": -0.023003681347310224,
+        "tenure_months_ratio_monthly_charges": 0.8180826048146029
+      },
+      "probability": 0.8070780907064095
+    },
+    {
+      "index": 145,
+      "true_label": 1,
+      "predicted_label": 0,
+      "loss": 1.382367308249321,
+      "feature_values": {
+        "tenure_months": -0.22683329430373436,
+        "logins_last_30d": 0.2982646188050694,
+        "tenure_months_log": -0.0276912656484735,
+        "monthly_charges_log": 0.5975199704187468,
+        "tenure_months_x_monthly_charges": 0.13246730195779371,
+        "tenure_months_ratio_monthly_charges": -0.4829810982930831
+      },
+      "probability": 0.7490163065384302
     },
     {
       "index": 147,
       "true_label": 0,
       "predicted_label": 1,
-      "loss": 1.0050514158437376,
+      "loss": 1.3581218287940096,
       "feature_values": {
         "tenure_months": -0.2825270559367939,
         "logins_last_30d": 1.0019115341535214,
@@ -208,88 +133,58 @@
         "tenure_months_x_monthly_charges": 0.3424198233591378,
         "tenure_months_ratio_monthly_charges": -0.6448086636078783
       },
-      "probability": 0.6339741852059012
+      "probability": 0.7428567171930006
     },
     {
-      "index": 104,
+      "index": 86,
       "true_label": 1,
       "predicted_label": 0,
-      "loss": 0.9852308263887966,
+      "loss": 1.3371125223250622,
       "feature_values": {
-        "tenure_months": 0.004026330530076611,
+        "tenure_months": -0.915819022893357,
+        "logins_last_30d": 0.09722264299122599,
+        "tenure_months_log": -0.7940535808096998,
+        "monthly_charges_log": 0.6465730884372828,
+        "tenure_months_x_monthly_charges": -0.5386310917743958,
+        "tenure_months_ratio_monthly_charges": -0.8750794919900494
+      },
+      "probability": 0.7373971652732714
+    },
+    {
+      "index": 199,
+      "true_label": 0,
+      "predicted_label": 1,
+      "loss": 1.0197143762984007,
+      "feature_values": {
+        "tenure_months": 0.48730445566856045,
+        "logins_last_30d": 1.0019115341535214,
+        "tenure_months_log": 0.5730663452135181,
+        "monthly_charges_log": 0.8276862240052825,
+        "tenure_months_x_monthly_charges": 1.0498529009426527,
+        "tenure_months_ratio_monthly_charges": -0.19141278272782908
+      },
+      "probability": 0.6393020506551015
+    },
+    {
+      "index": 166,
+      "true_label": 0,
+      "predicted_label": 1,
+      "loss": 0.863901320016352,
+      "feature_values": {
+        "tenure_months": -0.3642711254304779,
         "logins_last_30d": 0.7003485704327562,
-        "tenure_months_log": 0.1831830844403422,
-        "monthly_charges_log": -1.2451345098718316,
-        "tenure_months_x_monthly_charges": -0.6728899150683039,
-        "tenure_months_ratio_monthly_charges": 0.5641817272800663
+        "tenure_months_log": -0.16249747219077967,
+        "monthly_charges_log": -1.6821891815115502,
+        "tenure_months_x_monthly_charges": -1.0588486145050835,
+        "tenure_months_ratio_monthly_charges": 0.4882446717883223
       },
-      "probability": 0.6266469627437188
-    },
-    {
-      "index": 87,
-      "true_label": 0,
-      "predicted_label": 1,
-      "loss": 0.8935163868802071,
-      "feature_values": {
-        "tenure_months": -0.5017089565572215,
-        "logins_last_30d": 0.4993065946189128,
-        "tenure_months_log": -0.3052120320326967,
-        "monthly_charges_log": 0.44940029248637353,
-        "tenure_months_x_monthly_charges": -0.2279653819232016,
-        "tenure_months_ratio_monthly_charges": -0.5869692227901429
-      },
-      "probability": 0.5907857358477829
-    },
-    {
-      "index": 151,
-      "true_label": 1,
-      "predicted_label": 0,
-      "loss": 0.8261758499614822,
-      "feature_values": {
-        "tenure_months": -0.8870738555988747,
-        "logins_last_30d": 0.3987856067119911,
-        "tenure_months_log": -0.7567596915849494,
-        "monthly_charges_log": 0.7499594301464726,
-        "tenure_months_x_monthly_charges": -0.4590700169948273,
-        "tenure_months_ratio_monthly_charges": -0.8855093361002427
-      },
-      "probability": 0.562280003295851
-    },
-    {
-      "index": 200,
-      "true_label": 0,
-      "predicted_label": 0,
-      "loss": 0.566899474844556,
-      "feature_values": {
-        "tenure_months": -0.0453794257573149,
-        "logins_last_30d": 1.5045164736881298,
-        "tenure_months_log": 0.13956587453025152,
-        "monthly_charges_log": -1.6146718622463911,
-        "tenure_months_x_monthly_charges": -0.8558459939121421,
-        "tenure_months_ratio_monthly_charges": 0.7610311528965168
-      },
-      "probability": 0.5672815856302789
-    },
-    {
-      "index": 263,
-      "true_label": 1,
-      "predicted_label": 1,
-      "loss": 0.528012539519511,
-      "feature_values": {
-        "tenure_months": 3.0052014533696183,
-        "logins_last_30d": 0.3987856067119911,
-        "tenure_months_log": 1.9642985654942082,
-        "monthly_charges_log": 1.097619812017981,
-        "tenure_months_x_monthly_charges": 4.187469827443481,
-        "tenure_months_ratio_monthly_charges": 0.9144782614563036
-      },
-      "probability": 0.5897759620592988
+      "probability": 0.5784855922414488
     },
     {
       "index": 222,
       "true_label": 0,
-      "predicted_label": 0,
-      "loss": 0.49006988878864016,
+      "predicted_label": 1,
+      "loss": 0.776752574435511,
       "feature_values": {
         "tenure_months": 0.3714255000126781,
         "logins_last_30d": 1.1024325220604432,
@@ -298,65 +193,170 @@
         "tenure_months_x_monthly_charges": 1.0965798518760308,
         "tenure_months_ratio_monthly_charges": -0.3302454229342825
       },
-      "probability": 0.612583579963972
+      "probability": 0.5401029295533253
+    },
+    {
+      "index": 104,
+      "true_label": 1,
+      "predicted_label": 0,
+      "loss": 0.7402305950707989,
+      "feature_values": {
+        "tenure_months": 0.004026330530076611,
+        "logins_last_30d": 0.7003485704327562,
+        "tenure_months_log": 0.1831830844403422,
+        "monthly_charges_log": -1.2451345098718316,
+        "tenure_months_x_monthly_charges": -0.6728899150683039,
+        "tenure_months_ratio_monthly_charges": 0.5641817272800663
+      },
+      "probability": 0.5229960919120211
+    },
+    {
+      "index": 49,
+      "true_label": 0,
+      "predicted_label": 1,
+      "loss": 0.7298930654956777,
+      "feature_values": {
+        "tenure_months": 0.5241342012646156,
+        "logins_last_30d": 0.5998275825258346,
+        "tenure_months_log": 0.6003668160829045,
+        "monthly_charges_log": 0.5548414947315998,
+        "tenure_months_x_monthly_charges": 0.8531589603415326,
+        "tenure_months_ratio_monthly_charges": -0.04931864862845357
+      },
+      "probability": 0.5180394744554039
+    },
+    {
+      "index": 36,
+      "true_label": 0,
+      "predicted_label": 1,
+      "loss": 0.7064530350727241,
+      "feature_values": {
+        "tenure_months": -0.09837832795651662,
+        "logins_last_30d": 1.4039954857812083,
+        "tenure_months_log": 0.09189065211553303,
+        "monthly_charges_log": -0.9909651318004306,
+        "tenure_months_x_monthly_charges": -0.6253783295531126,
+        "tenure_months_ratio_monthly_charges": 0.323392749970735
+      },
+      "probability": 0.5066088614761179
+    },
+    {
+      "index": 200,
+      "true_label": 0,
+      "predicted_label": 0,
+      "loss": 0.6916288601485984,
+      "feature_values": {
+        "tenure_months": -0.0453794257573149,
+        "logins_last_30d": 1.5045164736881298,
+        "tenure_months_log": 0.13956587453025152,
+        "monthly_charges_log": -1.6146718622463911,
+        "tenure_months_x_monthly_charges": -0.8558459939121421,
+        "tenure_months_ratio_monthly_charges": 0.7610311528965168
+      },
+      "probability": 0.5007597368216837
+    },
+    {
+      "index": 41,
+      "true_label": 1,
+      "predicted_label": 1,
+      "loss": 0.6849269081506815,
+      "feature_values": {
+        "tenure_months": -1.7997329171986873,
+        "logins_last_30d": 0.1977436308981477,
+        "tenure_months_log": -2.3615708287430413,
+        "monthly_charges_log": 1.2276165294007444,
+        "tenure_months_x_monthly_charges": -1.2924182009108776,
+        "tenure_months_ratio_monthly_charges": -1.4238693277409964
+      },
+      "probability": 0.5041270758084918
+    },
+    {
+      "index": 148,
+      "true_label": 1,
+      "predicted_label": 1,
+      "loss": 0.6284476132559409,
+      "feature_values": {
+        "tenure_months": 0.09834641071509671,
+        "logins_last_30d": 0.9013905462465996,
+        "tenure_months_log": 0.264341871711447,
+        "monthly_charges_log": -1.392603378319142,
+        "tenure_months_x_monthly_charges": -0.6801445156393106,
+        "tenure_months_ratio_monthly_charges": 0.746779419711636
+      },
+      "probability": 0.5334192315387004
+    },
+    {
+      "index": 151,
+      "true_label": 1,
+      "predicted_label": 1,
+      "loss": 0.6260428355226404,
+      "feature_values": {
+        "tenure_months": -0.8870738555988747,
+        "logins_last_30d": 0.3987856067119911,
+        "tenure_months_log": -0.7567596915849494,
+        "monthly_charges_log": 0.7499594301464726,
+        "tenure_months_x_monthly_charges": -0.4590700169948273,
+        "tenure_months_ratio_monthly_charges": -0.8855093361002427
+      },
+      "probability": 0.5347035298362735
     }
   ],
   "confusion_analysis": {
     "confused_pairs": [
       {
-        "true_class": 1,
-        "predicted_class": 0,
-        "count": 9
-      },
-      {
         "true_class": 0,
         "predicted_class": 1,
-        "count": 8
+        "count": 10
+      },
+      {
+        "true_class": 1,
+        "predicted_class": 0,
+        "count": 6
       }
     ]
   },
   "slice_analysis": {
-    "overall_accuracy": 0.946875,
+    "overall_accuracy": 0.95,
     "slices": [
       {
         "feature": "tenure_months",
         "value": "(0.49, 3.249]",
-        "accuracy": 0.975,
+        "accuracy": 0.9625,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "tenure_months",
         "value": "(-2.105, -0.747]",
-        "accuracy": 0.9375,
+        "accuracy": 0.9625,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "tenure_months",
         "value": "(-0.149, 0.49]",
-        "accuracy": 0.9493670886075949,
+        "accuracy": 0.9367088607594937,
         "count": 79,
         "underperforming": false
       },
       {
         "feature": "tenure_months",
         "value": "(-0.747, -0.149]",
-        "accuracy": 0.9259259259259259,
+        "accuracy": 0.9382716049382716,
         "count": 81,
         "underperforming": false
       },
       {
         "feature": "logins_last_30d",
         "value": "(0.7, 2.61]",
-        "accuracy": 0.9466666666666667,
+        "accuracy": 0.9333333333333333,
         "count": 75,
         "underperforming": false
       },
       {
         "feature": "logins_last_30d",
         "value": "(-0.104, 0.7]",
-        "accuracy": 0.8674698795180723,
+        "accuracy": 0.891566265060241,
         "count": 83,
         "underperforming": false
       },
@@ -377,42 +377,42 @@
       {
         "feature": "tenure_months_log",
         "value": "(0.575, 2.27]",
-        "accuracy": 0.975,
+        "accuracy": 0.9625,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "tenure_months_log",
         "value": "(-4.633, -0.583]",
-        "accuracy": 0.9375,
+        "accuracy": 0.9625,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "tenure_months_log",
         "value": "(0.0458, 0.575]",
-        "accuracy": 0.9493670886075949,
+        "accuracy": 0.9367088607594937,
         "count": 79,
         "underperforming": false
       },
       {
         "feature": "tenure_months_log",
         "value": "(-0.583, 0.0458]",
-        "accuracy": 0.9259259259259259,
+        "accuracy": 0.9382716049382716,
         "count": 81,
         "underperforming": false
       },
       {
         "feature": "monthly_charges_log",
         "value": "(0.299, 0.798]",
-        "accuracy": 0.9,
+        "accuracy": 0.95,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "monthly_charges_log",
         "value": "(-3.693, -0.638]",
-        "accuracy": 0.9625,
+        "accuracy": 0.95,
         "count": 80,
         "underperforming": false
       },
@@ -426,63 +426,63 @@
       {
         "feature": "monthly_charges_log",
         "value": "(0.798, 1.731]",
-        "accuracy": 0.9375,
+        "accuracy": 0.9125,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "tenure_months_x_monthly_charges",
         "value": "(0.391, 4.678]",
-        "accuracy": 0.9875,
+        "accuracy": 0.95,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "tenure_months_x_monthly_charges",
         "value": "(-2.054, -0.762]",
-        "accuracy": 0.9875,
+        "accuracy": 0.975,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "tenure_months_x_monthly_charges",
         "value": "(-0.314, 0.391]",
-        "accuracy": 0.875,
+        "accuracy": 0.9125,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "tenure_months_x_monthly_charges",
         "value": "(-0.762, -0.314]",
-        "accuracy": 0.9375,
+        "accuracy": 0.9625,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "tenure_months_ratio_monthly_charges",
         "value": "(-0.294, 0.479]",
-        "accuracy": 0.975,
+        "accuracy": 0.95,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "tenure_months_ratio_monthly_charges",
         "value": "(-1.676, -0.683]",
-        "accuracy": 0.9375,
+        "accuracy": 0.9625,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "tenure_months_ratio_monthly_charges",
         "value": "(-0.683, -0.294]",
-        "accuracy": 0.9125,
+        "accuracy": 0.9375,
         "count": 80,
         "underperforming": false
       },
       {
         "feature": "tenure_months_ratio_monthly_charges",
         "value": "(0.479, 4.966]",
-        "accuracy": 0.9625,
+        "accuracy": 0.95,
         "count": 80,
         "underperforming": false
       }

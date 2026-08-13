@@ -88,7 +88,7 @@
       "quality_issues": "None detected"
     }
   },
-  "data_quality_summary": "Dataset quality score 96.7/100. Average missing rate 0.0%. Task: Predict which customers will churn.",
+  "data_quality_summary": "Dataset quality score 96.7/100. Average missing rate 0.0%. Task: Predict which customers will churn so the retention team can intervene. Missing a churner costs about 5x a false alarm, and scoring must respond in under 50ms..",
   "key_interactions": [
     "tenure_months \u00d7 monthly_charges"
   ],

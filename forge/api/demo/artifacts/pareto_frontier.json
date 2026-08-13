@@ -1,50 +1,50 @@
 [
   {
     "model_name": "logistic_regression",
-    "cv_score": 0.7942650860501557,
-    "latency_ms": 0.16500419878866524,
+    "cv_score": 0.8445439616229867,
+    "latency_ms": 0.1418083003954962,
     "is_pareto_optimal": false,
     "tied_with_leader": false
   },
   {
     "model_name": "random_forest",
-    "cv_score": 0.8843116023658197,
-    "latency_ms": 27.251483299187385,
-    "is_pareto_optimal": false,
-    "tied_with_leader": true
-  },
-  {
-    "model_name": "xgboost",
-    "cv_score": 0.873208169608173,
-    "latency_ms": 0.5484167020767927,
-    "is_pareto_optimal": false,
-    "tied_with_leader": true
-  },
-  {
-    "model_name": "lightgbm",
-    "cv_score": 0.8938308988466226,
-    "latency_ms": 0.6882874993607402,
+    "cv_score": 0.9011773214541148,
+    "latency_ms": 26.789791698683985,
     "is_pareto_optimal": true,
     "tied_with_leader": true
   },
   {
+    "model_name": "xgboost",
+    "cv_score": 0.8537138856042155,
+    "latency_ms": 0.5037625000113621,
+    "is_pareto_optimal": false,
+    "tied_with_leader": false
+  },
+  {
+    "model_name": "lightgbm",
+    "cv_score": 0.8845232709339097,
+    "latency_ms": 0.6815250002546236,
+    "is_pareto_optimal": false,
+    "tied_with_leader": true
+  },
+  {
     "model_name": "catboost",
-    "cv_score": 0.8888205114648938,
-    "latency_ms": 0.11464169947430491,
+    "cv_score": 0.890925708257767,
+    "latency_ms": 0.12687090202234685,
     "is_pareto_optimal": true,
     "tied_with_leader": true
   },
   {
     "model_name": "voting_ensemble",
-    "cv_score": 0.8914517994693162,
-    "latency_ms": 27.797208301490173,
+    "cv_score": 0.8913333004674113,
+    "latency_ms": 28.316379099851474,
     "is_pareto_optimal": false,
     "tied_with_leader": true
   },
   {
     "model_name": "stacking_ensemble",
-    "cv_score": 0.8877409167892928,
-    "latency_ms": 56.96325419994537,
+    "cv_score": 0.8828524261121459,
+    "latency_ms": 56.64230829861481,
     "is_pareto_optimal": false,
     "tied_with_leader": true
   }

@@ -1,29 +1,29 @@
 {
-  "model_name": "lightgbm",
+  "model_name": "random_forest",
   "top_features": [
     {
       "feature": "logins_last_30d",
-      "mean_abs_shap": 2.0480790701572076
+      "mean_abs_shap": 0.2720061960394413
     },
     {
       "feature": "tenure_months_x_monthly_charges",
-      "mean_abs_shap": 1.0290090314056348
+      "mean_abs_shap": 0.06737294022778377
     },
     {
       "feature": "monthly_charges_log",
-      "mean_abs_shap": 0.7115714137872375
+      "mean_abs_shap": 0.05706290589160329
     },
     {
       "feature": "tenure_months_ratio_monthly_charges",
-      "mean_abs_shap": 0.6826877185332891
+      "mean_abs_shap": 0.04162927453386343
     },
     {
       "feature": "tenure_months",
-      "mean_abs_shap": 0.24031410293838687
+      "mean_abs_shap": 0.03443672599685526
     },
     {
       "feature": "tenure_months_log",
-      "mean_abs_shap": 0.05198763001534206
+      "mean_abs_shap": 0.03352279930511646
     }
   ],
   "n_samples_explained": 200
