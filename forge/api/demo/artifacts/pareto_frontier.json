@@ -2,43 +2,50 @@
   {
     "model_name": "logistic_regression",
     "cv_score": 0.7942650860501557,
-    "latency_ms": 0.13247921597212553,
-    "is_pareto_optimal": false
+    "latency_ms": 0.16500419878866524,
+    "is_pareto_optimal": false,
+    "tied_with_leader": false
   },
   {
     "model_name": "random_forest",
     "cv_score": 0.8843116023658197,
-    "latency_ms": 26.56102920882404,
-    "is_pareto_optimal": false
+    "latency_ms": 27.251483299187385,
+    "is_pareto_optimal": false,
+    "tied_with_leader": true
   },
   {
     "model_name": "xgboost",
     "cv_score": 0.873208169608173,
-    "latency_ms": 0.521416706033051,
-    "is_pareto_optimal": false
+    "latency_ms": 0.5484167020767927,
+    "is_pareto_optimal": false,
+    "tied_with_leader": true
   },
   {
     "model_name": "lightgbm",
     "cv_score": 0.8938308988466226,
-    "latency_ms": 0.6629541050642729,
-    "is_pareto_optimal": true
+    "latency_ms": 0.6882874993607402,
+    "is_pareto_optimal": true,
+    "tied_with_leader": true
   },
   {
     "model_name": "catboost",
     "cv_score": 0.8888205114648938,
-    "latency_ms": 0.11434999760240316,
-    "is_pareto_optimal": true
+    "latency_ms": 0.11464169947430491,
+    "is_pareto_optimal": true,
+    "tied_with_leader": true
   },
   {
     "model_name": "voting_ensemble",
     "cv_score": 0.8914517994693162,
-    "latency_ms": 28.37306661531329,
-    "is_pareto_optimal": false
+    "latency_ms": 27.797208301490173,
+    "is_pareto_optimal": false,
+    "tied_with_leader": true
   },
   {
     "model_name": "stacking_ensemble",
     "cv_score": 0.8877409167892928,
-    "latency_ms": 55.90477499645203,
-    "is_pareto_optimal": false
+    "latency_ms": 56.96325419994537,
+    "is_pareto_optimal": false,
+    "tied_with_leader": true
   }
 ]

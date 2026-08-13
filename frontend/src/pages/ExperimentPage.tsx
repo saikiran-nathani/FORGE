@@ -64,6 +64,25 @@ export default function ExperimentPage() {
   const result = exp.result || {};
   const models = (result.model_results as Array<{ model_name: string; cv_score: number }>) || [];
   const metrics = (result.best_metrics as Record<string, number>) || {};
+  type ParetoRow = {
+    model_name: string; cv_score: number; latency_ms: number;
+    is_pareto_optimal: boolean; tied_with_leader?: boolean;
+  };
+  const sig = (result.significance as {
+    status?: string;
+    reason?: string;
+    metric?: string;
+    leader?: string;
+    alpha?: number;
+    n_units?: number;
+    tied_with_leader?: string[];
+    fastest_tied_model?: string;
+    fastest_tied_latency_ms?: number;
+    per_model?: Record<string, {
+      mean: number; diff_vs_leader: number; ci_lo: number; ci_hi: number;
+      distinguishable_from_leader: boolean;
+    }>;
+  }) || {};
   const shap = (result.shap_summary as {
     top_features?: Array<{ feature: string; mean_abs_shap: number }>;
     shap_status?: string;
@@ -248,7 +267,63 @@ export default function ExperimentPage() {
             </div>
           )}
 
-          {(result.pareto_frontier as Array<{ model_name: string; cv_score: number; latency_ms: number; is_pareto_optimal: boolean }>)?.length > 0 && (
+          {sig.status === 'ok' && sig.per_model && (
+            <div className="card">
+              <h2 className="font-display text-lg font-semibold mb-1 text-forge-hot">
+                Is the winner actually better?
+              </h2>
+              <p className="text-sm text-forge-steel/80 mb-4">
+                Paired bootstrap over {sig.n_units} held-out rows ({Math.round((1 - (sig.alpha ?? 0.05)) * 100)}% CI on the
+                difference in <span className="font-mono">{sig.metric}</span> vs <span className="font-mono">{sig.leader}</span>).
+                A model is <strong>tied</strong> when its interval contains zero — the gap is sampling noise, not skill.
+              </p>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="kicker text-forge-steel/70 border-b border-forge-line">
+                    <th className="text-left py-2 font-normal">Model</th>
+                    <th className="text-right py-2 font-normal">{sig.metric}</th>
+                    <th className="text-right py-2 font-normal">Δ vs leader</th>
+                    <th className="text-right py-2 font-normal">95% CI</th>
+                    <th className="text-right py-2 font-normal">Verdict</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(sig.per_model).map(([name, m]) => (
+                    <tr key={name} className="border-b border-forge-line/60">
+                      <td className="py-2.5">{name}{name === sig.leader && <span className="text-forge-accent"> ★</span>}</td>
+                      <td className="text-right font-mono text-forge-hot">{m.mean.toFixed(4)}</td>
+                      <td className="text-right font-mono text-forge-steel">{m.diff_vs_leader >= 0 ? '+' : ''}{m.diff_vs_leader.toFixed(4)}</td>
+                      <td className="text-right font-mono text-forge-steel/70 text-xs">
+                        [{m.ci_lo.toFixed(4)}, {m.ci_hi.toFixed(4)}]
+                      </td>
+                      <td className="text-right">
+                        {m.distinguishable_from_leader
+                          ? <span className="text-forge-steel/60">worse</span>
+                          : <span className="text-forge-accent">tied</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {sig.fastest_tied_model && sig.fastest_tied_model !== result.best_model_name && (
+                <p className="mt-4 text-sm text-forge-steel/80">
+                  <span className="text-forge-accent">Worth knowing:</span>{' '}
+                  <span className="font-mono">{sig.fastest_tied_model}</span> is statistically tied with the
+                  selected model but runs at {sig.fastest_tied_latency_ms?.toFixed(2)}ms. FORGE reports this —
+                  the choice is yours.
+                </p>
+              )}
+            </div>
+          )}
+
+          {sig.status === 'unavailable' && sig.reason && (
+            <div className="card">
+              <h2 className="font-display text-lg font-semibold mb-2 text-forge-hot">Is the winner actually better?</h2>
+              <p className="text-sm text-forge-steel/70">Significance testing unavailable — {sig.reason}</p>
+            </div>
+          )}
+
+          {(result.pareto_frontier as ParetoRow[])?.length > 0 && (
             <div className="card">
               <h2 className="font-display text-lg font-semibold mb-4 text-forge-hot">Pareto frontier · accuracy vs latency</h2>
               <table className="w-full text-sm">
@@ -257,15 +332,17 @@ export default function ExperimentPage() {
                     <th className="text-left py-2 font-normal">Model</th>
                     <th className="text-right py-2 font-normal">CV Score</th>
                     <th className="text-right py-2 font-normal">Latency (ms)</th>
+                    <th className="text-right py-2 font-normal">Tied</th>
                     <th className="text-right py-2 font-normal">Pareto</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(result.pareto_frontier as Array<{ model_name: string; cv_score: number; latency_ms: number; is_pareto_optimal: boolean }>).map((p) => (
+                  {(result.pareto_frontier as ParetoRow[]).map((p) => (
                     <tr key={p.model_name} className="border-b border-forge-line/60">
                       <td className="py-2.5">{p.model_name}</td>
                       <td className="text-right font-mono text-forge-hot">{p.cv_score.toFixed(4)}</td>
                       <td className="text-right font-mono text-forge-steel">{p.latency_ms.toFixed(1)}</td>
+                      <td className="text-right">{p.tied_with_leader ? <span className="text-forge-accent">=</span> : ''}</td>
                       <td className="text-right">{p.is_pareto_optimal ? <span className="text-forge-accent">★</span> : ''}</td>
                     </tr>
                   ))}

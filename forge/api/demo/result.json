@@ -32,8 +32,8 @@
       "model_name": "logistic_regression",
       "cv_score": 0.7942650860501557,
       "cv_score_std": 0.02560611711596553,
-      "training_time": 0.0013137501664459705,
-      "inference_latency_ms": 0.13247921597212553,
+      "training_time": 0.0016801250167191029,
+      "inference_latency_ms": 0.16500419878866524,
       "best_params": {
         "penalty": "l2",
         "C": 0.1319496149042567,
@@ -44,8 +44,8 @@
       "model_name": "random_forest",
       "cv_score": 0.8843116023658197,
       "cv_score_std": 0.021634891134727316,
-      "training_time": 0.18351320805959404,
-      "inference_latency_ms": 26.56102920882404,
+      "training_time": 0.18570337499841116,
+      "inference_latency_ms": 27.251483299187385,
       "best_params": {
         "n_estimators": 339,
         "max_depth": 19,
@@ -59,8 +59,8 @@
       "model_name": "xgboost",
       "cv_score": 0.873208169608173,
       "cv_score_std": 0.024067123511857812,
-      "training_time": 0.8085195000749081,
-      "inference_latency_ms": 0.521416706033051,
+      "training_time": 0.8217791670176666,
+      "inference_latency_ms": 0.5484167020767927,
       "best_params": {
         "n_estimators": 374,
         "max_depth": 7,
@@ -76,8 +76,8 @@
       "model_name": "lightgbm",
       "cv_score": 0.8938308988466226,
       "cv_score_std": 0.01447023935710044,
-      "training_time": 2.0773384170606732,
-      "inference_latency_ms": 0.6629541050642729,
+      "training_time": 2.410837082978105,
+      "inference_latency_ms": 0.6882874993607402,
       "best_params": {
         "n_estimators": 971,
         "max_depth": 10,
@@ -94,8 +94,8 @@
       "model_name": "catboost",
       "cv_score": 0.8888205114648938,
       "cv_score_std": 0.013807292692515186,
-      "training_time": 0.10800500004552305,
-      "inference_latency_ms": 0.11434999760240316,
+      "training_time": 0.10671441600425169,
+      "inference_latency_ms": 0.11464169947430491,
       "best_params": {
         "iterations": 231,
         "depth": 6,
@@ -109,7 +109,7 @@
       "cv_score": 0.8914517994693162,
       "cv_score_std": 0.0,
       "training_time": 0.0,
-      "inference_latency_ms": 28.37306661531329,
+      "inference_latency_ms": 27.797208301490173,
       "best_params": {}
     },
     {
@@ -117,7 +117,7 @@
       "cv_score": 0.8877409167892928,
       "cv_score_std": 0.0,
       "training_time": 0.0,
-      "inference_latency_ms": 55.90477499645203,
+      "inference_latency_ms": 56.96325419994537,
       "best_params": {}
     }
   ],
@@ -305,27 +305,27 @@
       "explanations": [
         {
           "feature": "logins_last_30d <= -0.71",
-          "weight": -0.3341349291344992
+          "weight": -0.3334863336752535
         },
         {
           "feature": "-0.72 < tenure_months_x_monthly_charges <= -0.26",
-          "weight": -0.13374206422081206
+          "weight": -0.12801545217808427
         },
         {
           "feature": "-0.62 < tenure_months <= -0.06",
-          "weight": -0.02281180690800564
-        },
-        {
-          "feature": "-0.66 < monthly_charges_log <= 0.28",
-          "weight": 0.012753216930620603
+          "weight": -0.04142046646513624
         },
         {
           "feature": "-0.28 < tenure_months_ratio_monthly_charges <= 0.63",
-          "weight": 0.00827758033869783
+          "weight": 0.019786405299873983
+        },
+        {
+          "feature": "-0.66 < monthly_charges_log <= 0.28",
+          "weight": 0.010304233013082878
         },
         {
           "feature": "-0.44 < tenure_months_log <= 0.13",
-          "weight": -0.0013736023495890955
+          "weight": -0.0011370784274393054
         }
       ]
     },
@@ -849,44 +849,51 @@
     {
       "model_name": "logistic_regression",
       "cv_score": 0.7942650860501557,
-      "latency_ms": 0.13247921597212553,
-      "is_pareto_optimal": false
+      "latency_ms": 0.16500419878866524,
+      "is_pareto_optimal": false,
+      "tied_with_leader": false
     },
     {
       "model_name": "random_forest",
       "cv_score": 0.8843116023658197,
-      "latency_ms": 26.56102920882404,
-      "is_pareto_optimal": false
+      "latency_ms": 27.251483299187385,
+      "is_pareto_optimal": false,
+      "tied_with_leader": true
     },
     {
       "model_name": "xgboost",
       "cv_score": 0.873208169608173,
-      "latency_ms": 0.521416706033051,
-      "is_pareto_optimal": false
+      "latency_ms": 0.5484167020767927,
+      "is_pareto_optimal": false,
+      "tied_with_leader": true
     },
     {
       "model_name": "lightgbm",
       "cv_score": 0.8938308988466226,
-      "latency_ms": 0.6629541050642729,
-      "is_pareto_optimal": true
+      "latency_ms": 0.6882874993607402,
+      "is_pareto_optimal": true,
+      "tied_with_leader": true
     },
     {
       "model_name": "catboost",
       "cv_score": 0.8888205114648938,
-      "latency_ms": 0.11434999760240316,
-      "is_pareto_optimal": true
+      "latency_ms": 0.11464169947430491,
+      "is_pareto_optimal": true,
+      "tied_with_leader": true
     },
     {
       "model_name": "voting_ensemble",
       "cv_score": 0.8914517994693162,
-      "latency_ms": 28.37306661531329,
-      "is_pareto_optimal": false
+      "latency_ms": 27.797208301490173,
+      "is_pareto_optimal": false,
+      "tied_with_leader": true
     },
     {
       "model_name": "stacking_ensemble",
       "cv_score": 0.8877409167892928,
-      "latency_ms": 55.90477499645203,
-      "is_pareto_optimal": false
+      "latency_ms": 56.96325419994537,
+      "is_pareto_optimal": false,
+      "tied_with_leader": true
     }
   ],
   "baseline_metrics": {
@@ -931,7 +938,79 @@
     "positive_class": "1"
   },
   "warnings": [],
-  "llm_report": "/var/folders/p1/5jdps9wn1p7gdsh_t4b3p46h0000gn/T/tmpoik6twzp/demo_dataset/analysis_report.md",
-  "artifact_dir": "/var/folders/p1/5jdps9wn1p7gdsh_t4b3p46h0000gn/T/tmpoik6twzp/demo_dataset",
-  "eda_report": "/var/folders/p1/5jdps9wn1p7gdsh_t4b3p46h0000gn/T/tmpoik6twzp/demo_dataset/eda_report.html"
+  "significance": {
+    "leader": "catboost",
+    "tied_with_leader": [
+      "random_forest",
+      "xgboost",
+      "lightgbm",
+      "catboost",
+      "voting_ensemble",
+      "stacking_ensemble"
+    ],
+    "per_model": {
+      "logistic_regression": {
+        "mean": 0.7763157894736842,
+        "diff_vs_leader": -0.13386385124487865,
+        "ci_lo": -0.20515390764279284,
+        "ci_hi": -0.0717842763241281,
+        "distinguishable_from_leader": true
+      },
+      "random_forest": {
+        "mean": 0.9069767441860465,
+        "diff_vs_leader": -0.003202896532516375,
+        "ci_lo": -0.03126580444805042,
+        "ci_hi": 0.022373353841683298,
+        "distinguishable_from_leader": false
+      },
+      "xgboost": {
+        "mean": 0.8957055214723927,
+        "diff_vs_leader": -0.014474119246170147,
+        "ci_lo": -0.040056098527795625,
+        "ci_hi": 0.009255184086359728,
+        "distinguishable_from_leader": false
+      },
+      "lightgbm": {
+        "mean": 0.8982035928143712,
+        "diff_vs_leader": -0.0119760479041916,
+        "ci_lo": -0.035133849947164536,
+        "ci_hi": 0.006254921596973885,
+        "distinguishable_from_leader": false
+      },
+      "catboost": {
+        "mean": 0.9101796407185628,
+        "diff_vs_leader": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "distinguishable_from_leader": false
+      },
+      "voting_ensemble": {
+        "mean": 0.9047619047619048,
+        "diff_vs_leader": -0.005417735956658065,
+        "ci_lo": -0.01696467676226228,
+        "ci_hi": 0.0,
+        "distinguishable_from_leader": false
+      },
+      "stacking_ensemble": {
+        "mean": 0.9090909090909091,
+        "diff_vs_leader": -0.0010887316276537717,
+        "ci_lo": -0.01967867332427376,
+        "ci_hi": 0.015572451392538102,
+        "distinguishable_from_leader": false
+      }
+    },
+    "alpha": 0.05,
+    "n_units": 320,
+    "n_valid_replicates": 1000,
+    "higher_is_better": true,
+    "multiplicity_correction": "none",
+    "status": "ok",
+    "metric": "f1",
+    "skipped_models": [],
+    "fastest_tied_model": "catboost",
+    "fastest_tied_latency_ms": 0.11464169947430491
+  },
+  "llm_report": "/var/folders/p1/5jdps9wn1p7gdsh_t4b3p46h0000gn/T/tmpg3pwthn8/demo_dataset/analysis_report.md",
+  "artifact_dir": "/var/folders/p1/5jdps9wn1p7gdsh_t4b3p46h0000gn/T/tmpg3pwthn8/demo_dataset",
+  "eda_report": "/var/folders/p1/5jdps9wn1p7gdsh_t4b3p46h0000gn/T/tmpg3pwthn8/demo_dataset/eda_report.html"
 }

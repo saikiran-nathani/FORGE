@@ -40,5 +40,77 @@
     "majority_fraction": 0.7375,
     "minority_fraction": 0.2625,
     "positive_class": "1"
+  },
+  "significance": {
+    "leader": "catboost",
+    "tied_with_leader": [
+      "random_forest",
+      "xgboost",
+      "lightgbm",
+      "catboost",
+      "voting_ensemble",
+      "stacking_ensemble"
+    ],
+    "per_model": {
+      "logistic_regression": {
+        "mean": 0.7763157894736842,
+        "diff_vs_leader": -0.13386385124487865,
+        "ci_lo": -0.20515390764279284,
+        "ci_hi": -0.0717842763241281,
+        "distinguishable_from_leader": true
+      },
+      "random_forest": {
+        "mean": 0.9069767441860465,
+        "diff_vs_leader": -0.003202896532516375,
+        "ci_lo": -0.03126580444805042,
+        "ci_hi": 0.022373353841683298,
+        "distinguishable_from_leader": false
+      },
+      "xgboost": {
+        "mean": 0.8957055214723927,
+        "diff_vs_leader": -0.014474119246170147,
+        "ci_lo": -0.040056098527795625,
+        "ci_hi": 0.009255184086359728,
+        "distinguishable_from_leader": false
+      },
+      "lightgbm": {
+        "mean": 0.8982035928143712,
+        "diff_vs_leader": -0.0119760479041916,
+        "ci_lo": -0.035133849947164536,
+        "ci_hi": 0.006254921596973885,
+        "distinguishable_from_leader": false
+      },
+      "catboost": {
+        "mean": 0.9101796407185628,
+        "diff_vs_leader": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "distinguishable_from_leader": false
+      },
+      "voting_ensemble": {
+        "mean": 0.9047619047619048,
+        "diff_vs_leader": -0.005417735956658065,
+        "ci_lo": -0.01696467676226228,
+        "ci_hi": 0.0,
+        "distinguishable_from_leader": false
+      },
+      "stacking_ensemble": {
+        "mean": 0.9090909090909091,
+        "diff_vs_leader": -0.0010887316276537717,
+        "ci_lo": -0.01967867332427376,
+        "ci_hi": 0.015572451392538102,
+        "distinguishable_from_leader": false
+      }
+    },
+    "alpha": 0.05,
+    "n_units": 320,
+    "n_valid_replicates": 1000,
+    "higher_is_better": true,
+    "multiplicity_correction": "none",
+    "status": "ok",
+    "metric": "f1",
+    "skipped_models": [],
+    "fastest_tied_model": "catboost",
+    "fastest_tied_latency_ms": 0.11464169947430491
   }
 }

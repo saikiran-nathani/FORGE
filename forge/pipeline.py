@@ -288,6 +288,24 @@ class ForgePipeline:
                 f"  Statistically tied with {significance['leader']}: "
                 f"{len(tied)} model(s) — {', '.join(tied)}"
             )
+            # Annotate the frontier so the UI can mark ties, and surface the
+            # cheapest tied model. SURFACED, never auto-selected: FORGE reports
+            # that a faster model is statistically indistinguishable and lets the
+            # user make the call.
+            tied_set = set(tied)
+            for p in pareto:
+                p["tied_with_leader"] = p["model_name"] in tied_set
+            tied_entries = [p for p in pareto if p["tied_with_leader"]]
+            if len(tied_entries) > 1:
+                fastest = min(tied_entries, key=lambda p: p["latency_ms"])
+                significance["fastest_tied_model"] = fastest["model_name"]
+                significance["fastest_tied_latency_ms"] = fastest["latency_ms"]
+                if fastest["model_name"] != best.model_name:
+                    console.print(
+                        f"  [cyan]Note:[/cyan] {fastest['model_name']} is statistically tied "
+                        f"with the best model but {fastest['latency_ms']:.2f}ms vs "
+                        f"{next((p['latency_ms'] for p in pareto if p['model_name'] == best.model_name), float('nan')):.2f}ms."
+                    )
         elif significance.get("reason"):
             console.print(f"  [yellow]Significance unavailable:[/yellow] {significance['reason']}")
 
