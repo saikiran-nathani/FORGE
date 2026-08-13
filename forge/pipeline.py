@@ -74,6 +74,7 @@ class PipelineResult:
     baseline_metrics: dict[str, Any]
     eval_context: dict[str, Any]
     warnings: list[str]
+    significance: dict[str, Any]
 
 
 class ForgePipeline:
@@ -276,6 +277,20 @@ class ForgePipeline:
         )
         self._print_results(model_results, best, test_metrics)
 
+        # Which leaderboard gaps are real vs noise? Reported, never used to pick.
+        self._progress("evaluation", "Testing which leaderboard gaps are statistically real…")
+        significance = self._significance_analysis(
+            model_results, features, profile.recommended_metric
+        )
+        if significance.get("status") == "ok":
+            tied = significance["tied_with_leader"]
+            console.print(
+                f"  Statistically tied with {significance['leader']}: "
+                f"{len(tied)} model(s) — {', '.join(tied)}"
+            )
+        elif significance.get("reason"):
+            console.print(f"  [yellow]Significance unavailable:[/yellow] {significance['reason']}")
+
         # Honest reference numbers — surfaced, never used to gate or alter the model.
         baseline_metrics = self._baseline_metrics(features, task_str, is_binary)
         eval_context = self._build_eval_context(features, task_type, best, test_metrics)
@@ -346,6 +361,7 @@ class ForgePipeline:
             artifact_dir, profile, semantic, test_metrics, engineered_features,
             selection_report, pareto,
             baseline_metrics=baseline_metrics, warnings=warnings, eval_context=eval_context,
+            significance=significance,
         )
 
         from forge.deployment.model_card_generator import ModelCardGenerator
@@ -372,7 +388,74 @@ class ForgePipeline:
             baseline_metrics=baseline_metrics,
             eval_context=eval_context,
             warnings=warnings,
+            significance=significance,
         )
+
+    def _significance_analysis(self, model_results, features, metric_name: str) -> dict[str, Any]:
+        """Which leaderboard differences are real, and which are sampling noise?
+
+        Uses a paired bootstrap over TEST ROWS (not the 5 CV folds): resample the
+        same row indices for every model and recompute the metric, so the shared
+        difficulty of hard rows cancels. Per-fold vectors were rejected on
+        purpose — with only 5 units the percentile interval is badly
+        anti-conservative (~84% actual coverage for a nominal 95%), which would
+        manufacture "significant" wins out of noise.
+
+        Never raises and never gates: on any problem it returns
+        {"status": "unavailable", "reason": ...} so the UI can say WHY rather
+        than silently showing nothing.
+        """
+        from sklearn.metrics import accuracy_score, f1_score, mean_squared_error, roc_auc_score
+
+        from forge.evaluation.significance import indistinguishable_set_from_predictions
+
+        metric_fns = {
+            "accuracy": lambda a, b: accuracy_score(a, b),
+            "f1": lambda a, b: f1_score(a, b, zero_division=0),
+            "f1_macro": lambda a, b: f1_score(a, b, average="macro", zero_division=0),
+            "roc_auc": lambda a, b: roc_auc_score(a, b),
+            "rmse": lambda a, b: float(np.sqrt(mean_squared_error(a, b))),
+        }
+        if metric_name not in metric_fns:
+            return {"status": "unavailable", "reason": f"no bootstrap metric for '{metric_name}'"}
+        if len(model_results) < 2:
+            return {"status": "unavailable", "reason": "need at least 2 models to compare"}
+
+        X_test, y_test = features.X_test, features.y_test.values
+        needs_proba = metric_name == "roc_auc"
+        predictions: dict[str, np.ndarray] = {}
+        skipped: list[str] = []
+        for r in model_results:
+            try:
+                if needs_proba:
+                    proba = r.fitted_model.predict_proba(X_test)
+                    arr = np.asarray(proba)[:, 1]
+                else:
+                    arr = np.asarray(r.fitted_model.predict(X_test)).ravel()
+                if arr.shape[0] != len(y_test):
+                    raise ValueError("prediction length mismatch")
+                predictions[r.model_name] = arr
+            except Exception as exc:  # one model's failure must not sink the analysis
+                skipped.append(f"{r.model_name} ({str(exc).splitlines()[0][:40]})")
+
+        if len(predictions) < 2:
+            return {
+                "status": "unavailable",
+                "reason": f"fewer than 2 models could predict on the test set; skipped: {skipped}",
+            }
+        try:
+            result = indistinguishable_set_from_predictions(
+                y_test, predictions, metric_fns[metric_name],
+                higher_is_better=metric_name != "rmse",
+                alpha=0.05, n_boot=1000, seed=42,
+            )
+        except ValueError as exc:
+            return {"status": "unavailable", "reason": str(exc)}
+
+        result["status"] = "ok"
+        result["metric"] = metric_name
+        result["skipped_models"] = skipped
+        return result
 
     def _baseline_metrics(self, features, task_str: str, is_binary: bool) -> dict[str, Any]:
         """Trivial baseline (majority class / mean) on the same split — a reference point."""
@@ -485,7 +568,7 @@ class ForgePipeline:
         return registry
 
     def _save_artifacts(self, artifact_dir, profile, semantic, metrics, engineered_features, selection, pareto,
-                        baseline_metrics=None, warnings=None, eval_context=None):
+                        baseline_metrics=None, warnings=None, eval_context=None, significance=None):
         # Persist the honest reference numbers so the model card (and anything else
         # reading from disk) can show the baseline comparison + warnings instead of
         # claiming "No limitations." These live only in memory otherwise.
@@ -494,6 +577,7 @@ class ForgePipeline:
                 "baseline_metrics": baseline_metrics or {},
                 "warnings": warnings or [],
                 "eval_context": eval_context or {},
+                "significance": significance or {},
             }, f, indent=2)
         with open(artifact_dir / "profile.json", "w") as f:
             json.dump(profile.to_dict(), f, indent=2)

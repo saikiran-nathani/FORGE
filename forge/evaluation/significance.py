@@ -30,7 +30,7 @@ sane stand-in for repeating the experiment. Two honest caveats:
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 from scipy.stats import binom, chi2
@@ -458,6 +458,123 @@ def indistinguishable_set(
         "per_model": per_model,
         "alpha": alpha,
         "n_units": int(n_units),
+        "higher_is_better": bool(higher_is_better),
+        "multiplicity_correction": "none",
+    }
+
+
+# --------------------------------------------------------------------------- #
+# 5. Metric-level paired bootstrap (for non-decomposable metrics)
+# --------------------------------------------------------------------------- #
+def indistinguishable_set_from_predictions(
+    y_true: Any,
+    predictions: dict[str, np.ndarray],
+    metric_fn: Callable[[np.ndarray, np.ndarray], float],
+    higher_is_better: bool = True,
+    alpha: float = 0.05,
+    n_boot: int = 1000,
+    seed: int = 42,
+    min_valid_fraction: float = 0.5,
+) -> dict[str, Any]:
+    """Tie-tiering for metrics that are NOT a mean over samples.
+
+    :func:`indistinguishable_set` averages per-unit values, which is only valid
+    for mean-decomposable metrics (accuracy, MAE). F1, ROC-AUC and RMSE are
+    functions of the whole sample, so this variant resamples TEST-ROW INDICES
+    once per bootstrap iteration and recomputes ``metric_fn`` for every model on
+    that same resample -- preserving the pairing that makes the test sensitive.
+
+    ``predictions`` maps model name -> the array ``metric_fn`` expects for that
+    model (hard labels for F1/accuracy, positive-class probabilities for AUC).
+    All arrays must align row-for-row with ``y_true``.
+
+    A resample can make a metric undefined (e.g. ROC-AUC when a bootstrap draw
+    contains a single class). Such a replicate is dropped for ALL models at once
+    so the pairing stays intact, and the number kept is reported as
+    ``n_valid_replicates`` -- never silently treated as a valid sample. If fewer
+    than ``min_valid_fraction`` of replicates survive, this raises rather than
+    returning an interval computed from too little evidence.
+
+    Returns the same schema as :func:`indistinguishable_set`, plus
+    ``n_valid_replicates``. ``mean`` is the metric on the FULL test set (the
+    number shown on the leaderboard), not a bootstrap average.
+    """
+    if not predictions:
+        raise ValueError("predictions is empty; nothing to compare")
+    alpha = _validate_alpha(alpha)
+    n_boot = _validate_n_boot(n_boot)
+
+    y = np.asarray(y_true)
+    n = y.shape[0]
+    if n < 2:
+        raise ValueError(f"need at least 2 test rows to bootstrap, got {n}")
+
+    preds: dict[str, np.ndarray] = {}
+    for name, arr in predictions.items():
+        a = np.asarray(arr)
+        if a.shape[0] != n:
+            raise ValueError(
+                f"model '{name}' has {a.shape[0]} predictions but y_true has {n} rows; "
+                "predictions must align row-for-row with y_true"
+            )
+        preds[name] = a
+
+    # Point estimates on the full test set (what the leaderboard displays).
+    observed = {name: float(metric_fn(y, arr)) for name, arr in preds.items()}
+    leader = min(
+        observed,
+        key=lambda name: (-observed[name] if higher_is_better else observed[name], name),
+    )
+
+    rng = np.random.default_rng(seed)
+    replicates: dict[str, list[float]] = {name: [] for name in preds}
+    n_valid = 0
+    for _ in range(n_boot):
+        idx = rng.integers(0, n, size=n)
+        try:
+            values = {name: float(metric_fn(y[idx], arr[idx])) for name, arr in preds.items()}
+        except (ValueError, ZeroDivisionError, IndexError):
+            # Metric undefined on this draw (e.g. one class present). Drop the
+            # replicate for every model so the pairing is preserved.
+            continue
+        if not all(np.isfinite(v) for v in values.values()):
+            continue
+        for name, v in values.items():
+            replicates[name].append(v)
+        n_valid += 1
+
+    if n_valid < max(2, int(min_valid_fraction * n_boot)):
+        raise ValueError(
+            f"only {n_valid}/{n_boot} bootstrap replicates produced a defined metric "
+            "for every model; the test set is too small or too degenerate for a "
+            "reliable interval"
+        )
+
+    lo_q, hi_q = 100.0 * (alpha / 2.0), 100.0 * (1.0 - alpha / 2.0)
+    leader_rep = np.asarray(replicates[leader], dtype="float64")
+    per_model: dict[str, dict[str, Any]] = {}
+    tied_with_leader: list[str] = []
+    for name in preds:
+        diffs = np.asarray(replicates[name], dtype="float64") - leader_rep
+        ci_lo, ci_hi = (float(x) for x in np.percentile(diffs, [lo_q, hi_q]))
+        contains_zero = bool(ci_lo <= 0.0 <= ci_hi)
+        per_model[name] = {
+            "mean": observed[name],
+            "diff_vs_leader": float(observed[name] - observed[leader]),
+            "ci_lo": ci_lo,
+            "ci_hi": ci_hi,
+            "distinguishable_from_leader": not contains_zero,
+        }
+        if contains_zero:
+            tied_with_leader.append(name)
+
+    return {
+        "leader": leader,
+        "tied_with_leader": tied_with_leader,
+        "per_model": per_model,
+        "alpha": alpha,
+        "n_units": int(n),
+        "n_valid_replicates": int(n_valid),
         "higher_is_better": bool(higher_is_better),
         "multiplicity_correction": "none",
     }

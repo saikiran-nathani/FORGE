@@ -179,6 +179,7 @@ class ExperimentStore:
                 "baseline_metrics": result.baseline_metrics,
                 "eval_context": result.eval_context,
                 "warnings": result.warnings,
+                "significance": result.significance,
                 "llm_report": result.llm_report_path,
                 "artifact_dir": str(result.output_dir),
                 "eda_report": str(result.output_dir / "eda_report.html"),
