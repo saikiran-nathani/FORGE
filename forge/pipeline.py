@@ -161,6 +161,7 @@ class ForgePipeline:
         self._progress("feature_engineering", f"Added {len(engineered_features)} stateless features")
         console.print(f"  Preprocessed features: {len(features.feature_names)}")
 
+        cv_recipe = features.recipe   # None => CV runs on the pre-transformed matrix
         selection_report: dict[str, Any] = {}
         if config.enable_feature_selection and len(features.feature_names) > 5:
             selector = FeatureSelector(task_type, config.target_column, config.random_state)
@@ -174,6 +175,12 @@ class ForgePipeline:
                 "importance": selection.importance_scores,
             }
             console.print(f"  After selection: {len(selection.selected_features)} features")
+            # Selection itself is NOT refit per fold (SHAP + RFECV are far too
+            # slow for that), but the chosen columns are applied inside the fold
+            # so preprocessing still refits on fold-training rows only. The
+            # residual — selection having seen all training rows — is disclosed.
+            if cv_recipe is not None:
+                cv_recipe.selected_features = list(selection.selected_features)
 
         console.print(f"  Train: {len(features.X_train):,} | Test: {len(features.X_test):,}")
 
@@ -200,7 +207,10 @@ class ForgePipeline:
                 self._progress("training", f"Training & tuning {model_cls.name} · model {i}/{n_models}")
                 # One misbehaving model family must not sink the whole run.
                 try:
-                    result = opt.optimize_model(model_cls, features.X_train, features.y_train)
+                    result = opt.optimize_model(
+                        model_cls, features.X_train, features.y_train,
+                        recipe=cv_recipe, X_raw=features.X_train_raw,
+                    )
                 except Exception as exc:
                     console.print(f"    [yellow]⚠ {model_cls.name} failed — skipped ({str(exc).splitlines()[0][:80]})[/yellow]")
                     self._progress("training", f"{model_cls.name} failed — skipped ({i}/{n_models})")
@@ -224,7 +234,8 @@ class ForgePipeline:
 
             if config.enable_ensembles and len(model_results) >= 3:
                 ensemble_builder = EnsembleBuilder(
-                    task_type, selection_metric, config.random_state, config.cv_folds
+                    task_type, selection_metric, config.random_state, config.cv_folds,
+                    recipe=cv_recipe, X_raw=features.X_train_raw,
                 )
                 for build_fn, label in [
                     (ensemble_builder.build_voting, "voting"),
@@ -484,11 +495,14 @@ class ForgePipeline:
                 "honest_nested_cv": honest,
                 "optimism": float(optimistic - honest),
                 "note": (
-                    "reported_cv fits preprocessing on all training rows before cutting "
-                    "folds; honest_nested_cv refits feature ops + preprocessing inside "
-                    "each fold. The gap is an UPPER BOUND on preprocessing optimism: the "
-                    "nested run also skips the feature-selection step (which itself used "
-                    "the target on all training rows), so both effects are included."
+                    "HPO's own CV already refits feature ops, clipping and preprocessing "
+                    "inside every fold, so reported_cv is free of preprocessing leakage. "
+                    "This check re-scores the winner with no target-informed feature "
+                    "selection at all, so the remaining gap is an UPPER BOUND on what is "
+                    "left: feature selection having seen the target on all training rows, "
+                    "plus winner's-curse from picking the best of several tuned models. "
+                    "Part of the gap is also the genuine benefit of selection, so treat it "
+                    "as a ceiling on optimism, not a measurement of it."
                 ),
             }
         except Exception as exc:

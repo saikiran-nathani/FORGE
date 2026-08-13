@@ -78,15 +78,36 @@ class OptunaOptimizer:
         model_cls: type[BaseModel],
         X: pd.DataFrame,
         y: pd.Series,
+        recipe: Any = None,
+        X_raw: pd.DataFrame | None = None,
     ) -> ModelResult:
+        """Tune a model with cross-validated Bayesian search.
+
+        When ``recipe`` and ``X_raw`` are supplied, every trial cross-validates a
+        full pipeline (feature ops -> clip -> preprocessing -> model) over the RAW
+        training frame, so all transforms REFIT INSIDE EACH FOLD. Without them the
+        CV runs on an already-transformed matrix, which leaks each fold's
+        validation rows into the transform applied to them and inflates the score.
+        """
         model_instance = model_cls(self.task_type)
         scoring = self._sklearn_scoring()
+        nested = recipe is not None and X_raw is not None
+        cv_X = X_raw if nested else X
+
+        def _estimator(params: dict[str, Any]):
+            model = model_instance.build_model(params)
+            if not nested:
+                return model
+            from forge.training.cv_pipeline import build_cv_pipeline
+
+            return build_cv_pipeline(recipe, model)
 
         def objective(trial: optuna.Trial) -> float:
             params = model_instance.get_search_space(trial)
-            model = model_instance.build_model(params)
             cv = self._get_cv(y)
-            scores = cross_val_score(model, X, y, cv=cv, scoring=scoring, n_jobs=1)
+            scores = cross_val_score(
+                _estimator(params), cv_X, y, cv=cv, scoring=scoring, n_jobs=1
+            )
             return float(scores.mean())
 
         study = optuna.create_study(
@@ -113,8 +134,13 @@ class OptunaOptimizer:
             fitted.predict(sample)
         inference_latency_ms = (time.perf_counter() - lat_start) / 10 * 1000
 
+        # Score the SAME protocol the search used. With `nested`, this refits the
+        # whole chain per fold on raw data, so the reported cv_score is unbiased
+        # rather than inflated by transforms fitted on all training rows.
         cv = self._get_cv(y)
-        scores = cross_val_score(fitted, X, y, cv=cv, scoring=scoring, n_jobs=1)
+        scores = cross_val_score(
+            _estimator(best_params), cv_X, y, cv=cv, scoring=scoring, n_jobs=1
+        )
         cv_mean = float(scores.mean())
         if scoring == "neg_root_mean_squared_error":
             cv_mean = -cv_mean

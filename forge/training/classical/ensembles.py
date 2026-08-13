@@ -22,11 +22,18 @@ class EnsembleBuilder:
         metric_name: str,
         random_state: int = 42,
         cv_folds: int = 5,
+        recipe: Any = None,
+        X_raw: Any = None,
     ):
         self.task_type = task_type
         self.metric_name = metric_name
         self.random_state = random_state
         self.cv_folds = cv_folds
+        # When present, ensemble CV also refits preprocessing inside each fold —
+        # otherwise ensembles would be scored on a leakier (more flattering)
+        # protocol than the base models and win the leaderboard unfairly.
+        self.recipe = recipe
+        self.X_raw = X_raw
         self.router = TaskRouter()
 
     def build_voting(
@@ -80,6 +87,10 @@ class EnsembleBuilder:
         # leaderboard/Pareto/_pick_best compare like with like instead of stamping
         # an f1_macro number with the run's roc_auc label.
         scoring = sklearn_scoring(self.metric_name)
+        if self.recipe is not None and self.X_raw is not None:
+            from forge.training.cv_pipeline import build_cv_pipeline
+
+            model, X = build_cv_pipeline(self.recipe, model), self.X_raw
         if self.router.is_classification(self.task_type):
             cv = StratifiedKFold(self.cv_folds, shuffle=True, random_state=self.random_state)
         else:

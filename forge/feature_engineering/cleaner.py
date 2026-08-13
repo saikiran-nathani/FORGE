@@ -25,10 +25,13 @@ class FeaturePipelineResult:
     preprocessor: ColumnTransformer
     label_encoder: LabelEncoder | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
-    # RAW (pre-preprocessing) training split, kept in memory only — used to
-    # measure how optimistic the leaky in-fold CV is. Deliberately NOT put in
-    # metadata, which gets serialised into the model bundle.
+    # RAW (pre-preprocessing) training split, kept in memory only — used to run
+    # cross-validation with every transform refitted inside each fold.
+    # Deliberately NOT put in metadata, which is serialised into the model bundle.
     X_train_raw: Any = None
+    # Everything needed to rebuild the preprocessing chain UNFITTED, so HPO can
+    # cross-validate without leaking full-training-set statistics into folds.
+    recipe: Any = None
 
 
 class FeaturePipeline:
@@ -140,7 +143,21 @@ class FeaturePipeline:
         X_train_df = pd.DataFrame(X_train_arr, columns=feature_names, index=X_train.index)
         X_test_df = pd.DataFrame(X_test_arr, columns=feature_names, index=X_test.index)
 
+        clip_cols = [
+            c for c in numerical_cols
+            if profile.outlier_analysis.get("per_column", {}).get(c, {}).get("recommendation") == "clip"
+        ]
+        from forge.training.cv_pipeline import PipelineRecipe
+
+        recipe = PipelineRecipe(
+            feature_specs=list(getattr(self, "fitted_specs", [])),
+            numerical_cols=list(numerical_cols),
+            categorical_cols=list(categorical_cols),
+            clip_cols=clip_cols,
+        )
+
         return FeaturePipelineResult(
+            recipe=recipe,
             X_train_raw=X_train_raw,
             X_train=X_train_df,
             X_test=X_test_df,
@@ -270,6 +287,7 @@ class FeaturePipeline:
         if not keep:
             return None, []
         transformer = FeatureSpecTransformer(keep).fit(X_train, y_train)
+        self.fitted_specs = list(keep)
         # Each fitted op reports the exact columns it produces — use that rather
         # than inferring names, so nothing is mis-attributed or missed.
         engineered = [
