@@ -25,6 +25,10 @@ class FeaturePipelineResult:
     preprocessor: ColumnTransformer
     label_encoder: LabelEncoder | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+    # RAW (pre-preprocessing) training split, kept in memory only — used to
+    # measure how optimistic the leaky in-fold CV is. Deliberately NOT put in
+    # metadata, which gets serialised into the model bundle.
+    X_train_raw: Any = None
 
 
 class FeaturePipeline:
@@ -75,6 +79,7 @@ class FeaturePipeline:
         # target/frequency encodings and clip bounds learn from train rows alone,
         # and the fitted parameters are persisted so a single inference row
         # reproduces the identical value.
+        X_train_raw = X_train.copy()
         feature_ops, engineered = self._fit_feature_ops(X_train, y_train, profile, feature_cols)
         if feature_ops is not None:
             X_train = feature_ops.transform(X_train)
@@ -136,6 +141,7 @@ class FeaturePipeline:
         X_test_df = pd.DataFrame(X_test_arr, columns=feature_names, index=X_test.index)
 
         return FeaturePipelineResult(
+            X_train_raw=X_train_raw,
             X_train=X_train_df,
             X_test=X_test_df,
             y_train=y_train,

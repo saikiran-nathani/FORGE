@@ -49,6 +49,7 @@ def build_result_dict(result) -> dict:
         "warnings": result.warnings,
         "significance": result.significance,
         "task_plan": result.task_plan,
+        "honest_cv": result.honest_cv,
         # path fields below are recomputed at load time from the committed location
         "llm_report": result.llm_report_path,
         "artifact_dir": str(result.output_dir),

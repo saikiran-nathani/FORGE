@@ -76,6 +76,7 @@ class PipelineResult:
     warnings: list[str]
     significance: dict[str, Any]
     task_plan: dict[str, Any]
+    honest_cv: dict[str, Any]
 
 
 class ForgePipeline:
@@ -319,6 +320,17 @@ class ForgePipeline:
         elif significance.get("reason"):
             console.print(f"  [yellow]Significance unavailable:[/yellow] {significance['reason']}")
 
+        # How optimistic is the CV number the leaderboard shows? Measured, not assumed.
+        honest_cv = self._honest_cv_check(
+            features, best, selection_metric, config.cv_folds, config.random_state
+        )
+        if honest_cv.get("status") == "ok":
+            console.print(
+                f"  CV honesty check: reported {honest_cv['reported_cv']:.4f} vs "
+                f"nested {honest_cv['honest_nested_cv']:.4f} "
+                f"(optimism {honest_cv['optimism']:+.4f})"
+            )
+
         # Honest reference numbers — surfaced, never used to gate or alter the model.
         baseline_metrics = self._baseline_metrics(features, task_str, is_binary)
         eval_context = self._build_eval_context(features, task_type, best, test_metrics)
@@ -389,7 +401,7 @@ class ForgePipeline:
             artifact_dir, profile, semantic, test_metrics, engineered_features,
             selection_report, pareto,
             baseline_metrics=baseline_metrics, warnings=warnings, eval_context=eval_context,
-            significance=significance, task_plan=task_plan,
+            significance=significance, task_plan=task_plan, honest_cv=honest_cv,
         )
 
         from forge.deployment.model_card_generator import ModelCardGenerator
@@ -418,7 +430,69 @@ class ForgePipeline:
             warnings=warnings,
             significance=significance,
             task_plan=task_plan,
+            honest_cv=honest_cv,
         )
+
+    def _honest_cv_check(self, features, best, metric_name: str, cv_folds: int, random_state: int) -> dict[str, Any]:
+        """Measure how optimistic the reported CV score is.
+
+        The leaderboard's CV runs on an already-transformed matrix: the imputer,
+        scaler and one-hot categories were fitted on ALL training rows before the
+        folds were cut, so each fold's validation rows helped shape the transform
+        applied to them. This re-runs cross-validation with feature ops and
+        preprocessing REFIT INSIDE EACH FOLD (an sklearn Pipeline over the raw
+        training frame), which is the unbiased protocol.
+
+        Returns both numbers rather than silently replacing one with the other —
+        model selection still uses the in-fold score, and saying so is the point.
+        """
+        from sklearn.base import clone
+        from sklearn.model_selection import KFold, StratifiedKFold, cross_val_score
+        from sklearn.pipeline import Pipeline as SkPipeline
+
+        from forge.training.hpo.optuna_optimizer import sklearn_scoring
+
+        raw = getattr(features, "X_train_raw", None)
+        if raw is None or best.fitted_model is None:
+            return {"status": "unavailable", "reason": "raw training split not retained"}
+        try:
+            steps = []
+            ops = features.metadata.get("feature_ops")
+            if ops is not None:
+                steps.append(("ops", clone(ops)))
+            steps.append(("prep", clone(features.preprocessor)))
+            steps.append(("model", clone(best.fitted_model)))
+            pipe = SkPipeline(steps)
+
+            is_clf = metric_name != "rmse"
+            cv = (
+                StratifiedKFold(cv_folds, shuffle=True, random_state=random_state)
+                if is_clf else KFold(cv_folds, shuffle=True, random_state=random_state)
+            )
+            scores = cross_val_score(
+                pipe, raw, features.y_train, cv=cv,
+                scoring=sklearn_scoring(metric_name), n_jobs=1,
+            )
+            honest = float(np.mean(scores))
+            if metric_name == "rmse":
+                honest = -honest
+            optimistic = float(best.cv_score)
+            return {
+                "status": "ok",
+                "metric": metric_name,
+                "reported_cv": optimistic,
+                "honest_nested_cv": honest,
+                "optimism": float(optimistic - honest),
+                "note": (
+                    "reported_cv fits preprocessing on all training rows before cutting "
+                    "folds; honest_nested_cv refits feature ops + preprocessing inside "
+                    "each fold. The gap is an UPPER BOUND on preprocessing optimism: the "
+                    "nested run also skips the feature-selection step (which itself used "
+                    "the target on all training rows), so both effects are included."
+                ),
+            }
+        except Exception as exc:
+            return {"status": "unavailable", "reason": str(exc).splitlines()[0][:160]}
 
     # Metrics the HPO layer can actually optimize (see optuna_optimizer.sklearn_scoring).
     _OPTIMIZABLE_METRICS = {"accuracy", "f1", "f1_macro", "roc_auc", "rmse"}
@@ -680,7 +754,7 @@ class ForgePipeline:
 
     def _save_artifacts(self, artifact_dir, profile, semantic, metrics, engineered_features, selection, pareto,
                         baseline_metrics=None, warnings=None, eval_context=None, significance=None,
-                        task_plan=None):
+                        task_plan=None, honest_cv=None):
         # Persist the honest reference numbers so the model card (and anything else
         # reading from disk) can show the baseline comparison + warnings instead of
         # claiming "No limitations." These live only in memory otherwise.
@@ -690,6 +764,7 @@ class ForgePipeline:
                 "warnings": warnings or [],
                 "eval_context": eval_context or {},
                 "significance": significance or {},
+                "honest_cv": honest_cv or {},
                 "task_plan": task_plan or {},
             }, f, indent=2)
         with open(artifact_dir / "profile.json", "w") as f:
