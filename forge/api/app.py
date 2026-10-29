@@ -9,6 +9,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 
+from forge.api import settings
 from forge.api.demo_loader import load_demo_seed
 from forge.api.schemas import ExperimentCreate, ExperimentResponse, ExperimentStatusResponse
 from forge.api.services.deployment_service import deployment_service
@@ -29,11 +30,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Only the configured frontend may call the API from a browser (FORGE_CORS_ORIGINS).
+# No cookies or auth headers are used, so credentials stay off — a wildcard origin
+# with credentials is also rejected by browsers.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=settings.cors_origins(),
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -59,10 +63,34 @@ async def create_experiment(
     if suffix not in (".csv", ".parquet", ".json"):
         raise HTTPException(400, "Supported formats: CSV, Parquet, JSON")
 
-    exp = store.create(name, target_column, task_description, Path("pending"))
+    max_trials = settings.max_trials()
+    if not 1 <= trials <= max_trials:
+        raise HTTPException(422, f"trials must be between 1 and {max_trials}")
+
+    # One training job at a time (FORGE_MAX_CONCURRENT_RUNS): the host is shared.
+    exp = store.create_if_capacity(
+        name, target_column, task_description, Path("pending"),
+        max_active=settings.max_concurrent_runs(),
+    )
+    if exp is None:
+        raise HTTPException(
+            429, "The server is already training a model. Try again in a few minutes.",
+            headers={"Retry-After": "120"},
+        )
+
+    # Stream the upload to disk in chunks and stop at the size cap, instead of
+    # reading an arbitrarily large body into memory first.
+    limit = settings.max_upload_bytes()
     dataset_path = store.base_dir / exp.id / f"dataset{suffix}"
-    content = await file.read()
-    dataset_path.write_bytes(content)
+    written = 0
+    with dataset_path.open("wb") as out:
+        while chunk := await file.read(1024 * 1024):
+            written += len(chunk)
+            if written > limit:
+                out.close()
+                store.discard(exp.id)
+                raise HTTPException(413, f"Dataset larger than {limit // (1024 * 1024)} MB")
+            out.write(chunk)
     exp.dataset_path = dataset_path
 
     store.run_async(exp, trials=trials, fast_mode=fast_mode)

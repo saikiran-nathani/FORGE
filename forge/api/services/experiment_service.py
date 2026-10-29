@@ -118,6 +118,49 @@ class ExperimentStore:
             self._experiments[exp_id] = exp
         return exp
 
+    def create_if_capacity(
+        self,
+        name: str,
+        target_column: str,
+        task_description: str,
+        dataset_path: Path,
+        max_active: int,
+    ) -> Experiment | None:
+        """Create an experiment only if fewer than ``max_active`` are pending/running.
+
+        Check and insert happen under one lock, so two simultaneous uploads
+        cannot both see spare capacity and both start a training job.
+        """
+        with self._lock:
+            active = sum(
+                1 for e in self._experiments.values()
+                if e.status in (ExperimentStatus.PENDING, ExperimentStatus.RUNNING)
+            )
+            if active >= max_active:
+                return None
+            exp_id = str(uuid.uuid4())[:8]
+            output_dir = self.base_dir / exp_id
+            output_dir.mkdir(parents=True, exist_ok=True)
+            exp = Experiment(
+                id=exp_id,
+                name=name,
+                target_column=target_column,
+                task_description=task_description,
+                status=ExperimentStatus.PENDING,
+                created_at=datetime.now(timezone.utc).isoformat(),
+                dataset_path=dataset_path,
+                output_dir=output_dir,
+            )
+            self._experiments[exp_id] = exp
+            return exp
+
+    def discard(self, exp_id: str) -> None:
+        """Forget an experiment that never started (e.g. its upload was rejected)."""
+        with self._lock:
+            exp = self._experiments.pop(exp_id, None)
+        if exp is not None:
+            shutil.rmtree(exp.output_dir, ignore_errors=True)
+
     def add(self, exp: Experiment) -> None:
         with self._lock:
             self._experiments[exp.id] = exp

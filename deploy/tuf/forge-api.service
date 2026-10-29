@@ -1,0 +1,33 @@
+# FORGE API on the TUF, as a systemd *user* service (no root needed).
+# Installed by deploy/tuf/install.sh to ~/.config/systemd/user/forge-api.service.
+#
+# It shares the machine with the Platform hub (trainwatch-hub.service), which is the
+# system of record. The limits below make sure a training job started from the public
+# demo can slow FORGE down but can never starve the hub of CPU or memory.
+
+[Unit]
+Description=FORGE API (public demo via Tailscale Funnel :8443)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# All runtime state (experiments/, deployments/, outputs/, mlflow.db) is written
+# relative to this directory — on the 916 GB data disk, not the system disk.
+WorkingDirectory=/data/forge
+EnvironmentFile=%h/.config/forge/forge.env
+ExecStart=%h/projects/FORGE/.venv/bin/uvicorn forge.api.app:app --host 127.0.0.1 --port 8100 --workers 1 --proxy-headers
+Restart=on-failure
+RestartSec=5
+
+# Protect the hub: lower CPU share under contention (hub keeps the default weight
+# of 100), a hard ceiling of 8 of the 16 cores, and a memory cap.
+Nice=10
+CPUWeight=20
+CPUQuota=800%
+MemoryHigh=5G
+MemoryMax=6G
+TasksMax=512
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target
