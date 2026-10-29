@@ -45,9 +45,12 @@ if [ ! -f "$CONF/forge.env" ]; then
   install -m 600 "$APP/deploy/tuf/forge.env.example" "$CONF/forge.env"
   echo "Created $CONF/forge.env from the template."
 fi
-if grep -q "REPLACE-ME" "$CONF/forge.env"; then
-  die "Set FORGE_CORS_ORIGINS in $CONF/forge.env to your Netlify URL, then re-run."
-fi
+# Check the setting's value only — the template's comments mention the placeholder too.
+origins=$(grep -E '^FORGE_CORS_ORIGINS=' "$CONF/forge.env" | tail -1 | cut -d= -f2-)
+case "$origins" in
+  ""|*REPLACE-ME*|*YOUR-SITE*)
+    die "FORGE_CORS_ORIGINS in $CONF/forge.env is '${origins:-unset}'. Set it to your real Netlify URL, then re-run." ;;
+esac
 grep "^FORGE_" "$CONF/forge.env"
 
 step "Service"
